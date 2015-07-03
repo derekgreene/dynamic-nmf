@@ -17,12 +17,11 @@ def main():
 	parser.add_option("--minlen", action="store", type="int", dest="min_doc_length", help="minimum document length (in characters)", default=50)
 	parser.add_option("-s", action="store", type="string", dest="stoplist_file", help="custom stopword file path", default=None)
 	parser.add_option("-o","--outdir", action="store", type="string", dest="dir_out", help="output directory (default is current directory)", default=None)
-	parser.add_option('-d','--debug',type="int",help="Level of log output; 0 is less, 5 is all", default=3)
 	# Parse command line arguments
 	(options, args) = parser.parse_args()
 	if( len(args) < 1 ):
 		parser.error( "Must specify at least one directory" )	
-	log.basicConfig(level=max(50 - (options.debug * 10), 10), format='%(message)s')
+	log.basicConfig(level=20, format='%(message)s')
 
 	if options.dir_out is None:
 		dir_out = os.getcwd()
