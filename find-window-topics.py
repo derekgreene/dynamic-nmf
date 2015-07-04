@@ -23,9 +23,9 @@ def main():
 	log.basicConfig(level=20, format='%(message)s')
 
 	if options.dir_out is None:
-		dir_out_base = os.getcwd()
+		dir_out = os.getcwd()
 	else:
-		dir_out_base = options.dir_out	
+		dir_out = options.dir_out	
 
 	# Set random state
 	np.random.seed( options.seed )
@@ -44,7 +44,7 @@ def main():
 
 		# Generate NMF topic model for the specified numbers of topics
 		k = options.k
-		log.info( "Applying NMF to matrix for k=%d topics ..." % k )
+		log.info( "Applying window topic modeling to matrix for k=%d topics ..." % k )
 		impl.apply( X, k )
 		log.info( "Generated %dx%d factor W and %dx%d factor H" % ( impl.W.shape[0], impl.W.shape[1], impl.H.shape[0], impl.H.shape[1] ) )
 		partition = impl.generate_partition()
@@ -64,7 +64,7 @@ def main():
 			topic_labels.append( "%s_%02d" % ( window_name, (i+1) ) )
 
 		# Write results
-		results_out_path = os.path.join( dir_out_base, "%s_windowtopics_k%02d.pkl"  % (window_name, k) )
+		results_out_path = os.path.join( dir_out, "%s_windowtopics_k%02d.pkl"  % (window_name, k) )
 		unsupervised.util.save_nmf_results( results_out_path, term_rankings, partition, impl.W, impl.H, terms, topic_labels )
 
 # --------------------------------------------------------------
