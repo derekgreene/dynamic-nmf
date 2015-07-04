@@ -41,7 +41,7 @@ def format_term_rankings( term_rankings, labels = None, top = 10 ):
 
 def main():
 	parser = OptionParser(usage="usage: %prog [options] results_file1 results_file2 ...")
-	parser.add_option('-d','--debug',type="int",help="Level of log output; 0 is less, 5 is all", default=3)
+	parser.add_option("-t", "--top", action="store", type="int", dest="top", help="number of top terms to show", default=10)
 	(options, args) = parser.parse_args()
 	if( len(args) < 1 ):
 		parser.error( "Must specify at least one topic modeling results file produced by NMF" )
@@ -49,10 +49,10 @@ def main():
 
 	# Load each cached ranking set
 	for in_path in args:
-		(term_rankings, partition, W, H, labels) = unsupervised.util.load_nmf_results( in_path )
+		(term_rankings, partition, W, H, terms, labels) = unsupervised.util.load_nmf_results( in_path )
 		m = unsupervised.rankings.term_rankings_size( term_rankings )
 		log.info( "- Loaded model with %d topics from %s" % (len(term_rankings), in_path) )
-		log.info( "Top %d terms for topics:" % options.top )
+		log.info( "Top %d terms for %d topics:" % (options.top,len(term_rankings)) )
 		print format_term_rankings( term_rankings, labels, min(options.top,m) )
 
 # --------------------------------------------------------------
