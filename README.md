@@ -31,7 +31,7 @@ Once the data has been pre-processed, the next step is to generate the *window t
 	
 	python find-window-topics.py data/month1.pkl data/month2.pkl data/month3.pkl -k 5 -o out
 
-When the process has completed, we can view the descriptiors(i.e. the top ranked terms) for the resulting window topics as follows:
+When the process has completed, we can view the descriptiors (i.e. the top ranked terms) for the resulting window topics as follows:
 
 	python display-topics.py out/month1_windowtopics_k05.pkl out/month2_windowtopics_k05.pkl out/month3_windowtopics_k05.pkl
 
@@ -39,6 +39,10 @@ When the process has completed, we can view the descriptiors(i.e. the top ranked
 Once the window topics have been created, we combine the results for the time windows to generate the *dynamic topics* that span across multiple time windows. If we want to specify a fixed number of dynamic topics (e.g. 5), we can run the following, where results are written to the directory 'out':
 
 	python find-dynamic-topics.py out/month1_windowtopics_k05.pkl out/month2_windowtopics_k05.pkl out/month3_windowtopics_k05.pkl -k 5 -o out
+	
+In this case the results will be written to 'out/dynamictopics_k05.pkl'. When the process has completed, we can view the dynamic topic descriptiors using:
+
+	python display-topics.py out/dynamictopics_k05.pkl
 
 ### Advanced Usage
 
