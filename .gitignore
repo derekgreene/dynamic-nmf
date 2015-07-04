@@ -54,6 +54,8 @@ coverage.xml
 docs/_build/
 
 # Custom
-data/
+data/sample/
+*.pkl
+*.npy
 out/
 
