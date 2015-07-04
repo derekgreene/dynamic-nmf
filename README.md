@@ -20,7 +20,7 @@ Tested with Python 2.7.x and requiring the following packages, which are availab
 
 ### Basic Usage
 ##### Step 1: Pre-processing
-Before applying dynamic topic modeling, the first step is to pre-process the documents from each time window, to produce a *document-term matrix* for those windows. Here, we parse all .txt files in three sub-directories of 'data/sample'. The output files will be stored in the directory 'data'. Note that the final options below indicate that we want to apply TF-IDF term weighting and document length normalization to the documents before writing each matrix.
+Before applying dynamic topic modeling, the first step is to pre-process the documents from each time window, to produce a *document-term matrix* for those windows. Here, we parse all .txt files in the sub-directories of 'data/sample'. The output files will be stored in the directory 'data'. Note that the final options below indicate that we want to apply TF-IDF term weighting and document length normalization to the documents before writing each matrix.
 
 	python prep-text.py data/sample/month1 data/sample/month2 data/sample/month3 -o data --tfidf --norm
 
