@@ -25,6 +25,9 @@ def format_term_rankings( term_rankings, labels = None, top = 10 ):
 		for label in labels:
 			header.append(label)	
 	tab = PrettyTable(header)
+	tab.align["Rank"] = "r"
+	for label in header[1:]:
+		tab.align[label] = "l"
 	# add body
 	for pos in range(top):
 		row = [ str(pos+1) ]
