@@ -79,3 +79,47 @@ def find_documents( root_path ):
 	filepaths.sort()
 	return filepaths	
 
+# --------------------------------------------------------------
+
+class DocumentBodyGenerator:
+
+	def __init__( self, dir_paths, min_doc_length ):
+		self.dir_paths = dir_paths
+		self.min_doc_length = min_doc_length
+
+	def __iter__( self ):
+		for in_path in self.dir_paths:
+			# Find all text files in the directory
+			dir_name = os.path.basename( in_path )
+			log.info( "- Processing '%s' from %s ..." % (dir_name,in_path) )
+			for filepath in find_documents( in_path ):
+				doc_id = os.path.splitext( os.path.basename( filepath ) )[0]
+				fin = codecs.open(filepath, 'r', encoding="utf8", errors='ignore')
+				body = fin.read()
+				fin.close()
+				if len(body) < self.min_doc_length:
+					continue
+				yield (doc_id,body)
+
+
+class DocumentTokenGenerator:
+
+	def __init__( self, dir_paths, min_doc_length, stopwords ):
+		self.dir_paths = dir_paths
+		self.min_doc_length = min_doc_length
+		self.stopwords = stopwords
+		self.min_term_length = 2
+		self.placeholder = "<stopword>"
+
+	def __iter__( self ):
+		bodygen = DocumentBodyGenerator( self.dir_paths, self.min_doc_length )
+		for doc_id, body in bodygen:
+			body = body.lower().strip()
+			tokens = []
+			for tok in custom_tokenizer( body, self.min_term_length ):
+				if tok in self.stopwords:
+					tokens.append( self.placeholder )
+				else:
+					tokens.append( tok )
+			yield tokens
+			

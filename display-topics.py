@@ -8,37 +8,6 @@ https://code.google.com/p/prettytable/
 import logging as log
 from optparse import OptionParser
 import unsupervised.util, unsupervised.rankings
-from prettytable import PrettyTable
-
-# --------------------------------------------------------------
-
-def format_term_rankings( term_rankings, labels = None, top = 10 ):
-	"""
-	Format a list of multiple term rankings using PrettyTable.
-	"""
-	# add header
-	header = ["Rank"]
-	if labels is None:
-		for i in range( len(term_rankings) ):
-			header.append("C%02d" % (i+1) )	
-	else:
-		for label in labels:
-			header.append(label)	
-	tab = PrettyTable(header)
-	tab.align["Rank"] = "r"
-	for label in header[1:]:
-		tab.align[label] = "l"
-	# add body
-	for pos in range(top):
-		row = [ str(pos+1) ]
-		for ranking in term_rankings:
-			# have we run out of terms?
-			if len(ranking) <= pos:
-				row.append( "" ) 
-			else:
-				row.append( ranking[pos] ) 
-		tab.add_row( row )
-	return tab
 
 # --------------------------------------------------------------
 
@@ -56,7 +25,7 @@ def main():
 		m = unsupervised.rankings.term_rankings_size( term_rankings )
 		log.info( "- Loaded model with %d topics from %s" % (len(term_rankings), in_path) )
 		log.info( "Top %d terms for %d topics:" % (options.top,len(term_rankings)) )
-		print format_term_rankings( term_rankings, labels, min(options.top,m) )
+		print unsupervised.rankings.format_term_rankings( term_rankings, labels, min(options.top,m) )
 
 # --------------------------------------------------------------
 
