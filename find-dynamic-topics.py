@@ -6,6 +6,7 @@ import os, sys, random
 import logging as log
 from optparse import OptionParser
 import numpy as np
+import sklearn.preprocessing
 import text.util, unsupervised.nmf, unsupervised.rankings, unsupervised.util
 
 # --------------------------------------------------------------
@@ -22,6 +23,9 @@ class TopicCollection:
 		self.all_terms = set()		
 
 	def add_topic_model( self, H, terms, window_topic_labels ):
+		'''
+		Add topics from a window topic model to the collection.
+		'''
 		k = H.shape[0]
 		for topic_index in range(k):
 			topic_weights = {}
@@ -46,18 +50,24 @@ class TopicCollection:
 
 	def create_matrix( self ):
 		'''
-		Create the topic-term matrix.
+		Create the topic-term matrix from all window topics that have been added so far.
 		'''
+		# map terms to column indices
 		all_terms = list(self.all_terms)
 		M = np.zeros( (len(self.all_weights), len(all_terms)) )
 		term_col_map = {}
 		for term in all_terms:
 			term_col_map[term] = len(term_col_map)
+		# populate the matrix in row-order
 		row = 0
 		for topic_weights in self.all_weights:
 			for term in topic_weights.keys():
 				M[row,term_col_map[term]] = topic_weights[term]
 			row +=1
+		# normalize the matrix rows to L2 unit length
+		normalizer = sklearn.preprocessing.Normalizer(norm='l2', copy=True)
+		normalizer.fit(M)
+		M = normalizer.transform(M)
 		return (M,all_terms)
 
 # --------------------------------------------------------------
@@ -97,6 +107,7 @@ def main():
 	# Create the topic-term matrix
 	M, all_terms = collection.create_matrix()
 	log.info( "Created topic-term matrix of size %dx%d" % M.shape )
+	log.debug( "Matrix stats: range=[%.2f,%.2f] mean=%.2f" % ( np.min(M), np.mean(M), np.max(M) ) )	
 
 	# Generate dynamic NMF topic model for the specified numbers of topics
 	impl = unsupervised.nmf.SklNMF( max_iters = options.maxiter, init_strategy = "nndsvd" )
