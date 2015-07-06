@@ -25,28 +25,3 @@ def truncate_term_rankings( orig_rankings, top ):
 		trunc_rankings.append( ranking[0:min(len(ranking),top)] )
 	return trunc_rankings
 
-def format_term_rankings( term_rankings, labels = None, top = 10 ):
-	"""
-	Format a list of multiple term rankings using PrettyTable.
-	"""
-	from prettytable import PrettyTable
-	# add header
-	header = ["Rank"]
-	if labels is None:
-		for i in range( len(term_rankings) ):
-			header.append("C%02d" % (i+1) )	
-	else:
-		for label in labels:
-			header.append(label)	
-	tab = PrettyTable(header)
-	# add body
-	for pos in range(top):
-		row = [ str(pos+1) ]
-		for ranking in term_rankings:
-			# have we run out of terms?
-			if len(ranking) <= pos:
-				row.append( "" ) 
-			else:
-				row.append( ranking[pos] ) 
-		tab.add_row( row )
-	return tab
