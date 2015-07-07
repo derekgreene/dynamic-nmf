@@ -2,7 +2,7 @@
 
 ### Summary
 
-Standard topic modeling approaches assume the order of documents does not matter, making them unsuitable for time-stamped corpora. In contrast, *dynamic topic modeling* approaches track how language changes and topics evolve over time in a time-stamped corpus. We have developed a two-level approach for dynamic topic modeling via Non-negative Matrix Factorization (NMF), which links together topics identified in snapshots of text sources appearing over time.
+Standard topic modeling approaches assume the order of documents does not matter, making them unsuitable for time-stamped corpora. In contrast, *dynamic topic modeling* approaches track how language changes and topics evolve over time. We have developed a two-level approach for dynamic topic modeling via Non-negative Matrix Factorization (NMF), which links together topics identified in snapshots of text sources appearing over time.
 
 Details of this approach are described in the following paper ([Link](http://arxiv.org/abs/1505.07302)):
 
@@ -23,14 +23,14 @@ Tested with Python 2.7.x and requiring the following packages, which are availab
 
 To perform dynamic topic modeling, the input corpus of documents should consist of plain text files (one document per file), organised into two or more sub-directories. Each of these sub-directories should correspond to a unique *time window*, representing a different time interval. The names of these sub-directories is arbitrary, once their alphabetic ordering corresponds to their order in time (e.g 2000, 2001, 2002; month1, month2, month3; 2010-q1, 2010-q2, 2010-q3). 
 
-The dynamic topic modeling process consists of three steps, discussed below. The archive 'data/sample.zip' contains a sample corpus of 1,324 news articles divided into three time window (month1, month2, month3), which is used to illustrate these steps.
+The dynamic topic modeling process consists of three steps, discussed below. The archive 'data/sample.zip' contains a sample corpus of 1,324 news articles divided into three time windows (month1, month2, month3), which is used to illustrate these steps.
 
 ##### Step 1: Pre-processing
 Before applying dynamic topic modeling, the first step is to pre-process the documents from each time window (i.e. sub-directory), to produce a *document-term matrix* for those windows. This involves tokenizing the documents, removing common stop-words, and building a document-term matrix for the time window. In the example below, we parse all .txt files in the sub-directories of 'data/sample'. The output files will be stored in the directory 'data'. Note that the final options below indicate that we want to apply TF-IDF term weighting and document length normalization to the documents before writing each matrix.
 
 	python prep-text.py data/sample/month1 data/sample/month2 data/sample/month3 -o data --tfidf --norm
 
-The result of this process will be a collection of Pickle files (*.pkl and *.npy) written to the directory 'data', where the prefix of each corresponds to the name of each time window (e.g. month1, month2 etc).
+The result of this process will be a collection of Joblib binary files (*.pkl and *.npy) written to the directory 'data', where the prefix of each corresponds to the name of each time window (e.g. month1, month2 etc).
 
 ##### Step 2: Window Topic Modeling 
 Once the data has been pre-processed, the next step is to generate the *window topics*, where a topic model is created by applying NMF to each the pre-process data for each time window. For the example data, we apply it to the three months. If we want to use the same number of topics for each window (e.g. 5 topics), we can run the following, where results are written to the directory 'out':
@@ -41,16 +41,16 @@ When the process has completed, we can view the descriptiors (i.e. the top ranke
 
 	python display-topics.py out/month1_windowtopics_k05.pkl out/month2_windowtopics_k05.pkl out/month3_windowtopics_k05.pkl
 
-The top terms and document IDs can be exported from a NMF results file to two comma-separated files using 'export-csv.py'. For instance, to export the top 50 terms and document IDs for a single results file:
+The top terms and document IDs can be exported from a NMF results file to two individual comma-separated files using 'export-csv.py'. For instance, to export the top 50 terms and document IDs for a single results file:
 
 	python export-csv.py out/month1_windowtopics_k05.pkl -t 50
 
 ##### Step 3: Dynamic Topic Modeling 
-Once the window topics have been created, we combine the results for the time windows to generate the *dynamic topics* that span across multiple time windows. If we want to specify a fixed number of dynamic topics (e.g. 5), we can run the following, where results are written to the directory 'out':
+Once the window topics have been created, we combine the results for the time windows to generate *dynamic topics* that span across multiple time windows. If we want to specify a fixed number of dynamic topics (e.g. *k=5*), we can run the following, where results are written to the directory 'out':
 
 	python find-dynamic-topics.py out/month1_windowtopics_k05.pkl out/month2_windowtopics_k05.pkl out/month3_windowtopics_k05.pkl -k 5 -o out
 	
-In this case the results will be written to 'out/dynamictopics_k05.pkl'. When the process has completed, we can view the dynamic topic descriptiors using:
+In this case the results will be written to 'out/dynamictopics_k05.pkl'. When the process has completed, we can view the dynamic topic descriptiors using 'display-topics.py':
 
 	python display-topics.py out/dynamictopics_k05.pkl
 
@@ -73,7 +73,7 @@ For the sample corpus, the output for the top 10 terms for 5 dynamic topics shou
 
 ### Advanced Usage
 
-The examples above involve using a pre-determined number of topics, for both window topics and dynamic topics. In cases where this number is not known in advance, a variety of strategies exist for automatically or semi-automatically choosing a number of topics. This package contains an implementation of the TC-W2V *topic coherence* measure, which can be used to compare different topic models and subsequently choose a model with a suitable number of topics. More details on the TC-W2V are included in the paper:
+The examples above involve using a manually-specified number of topics, for both window topics and dynamic topics. In cases where this number is not known in advance, a variety of strategies exist for automatically or semi-automatically choosing a number of topics. This package contains an implementation of the TC-W2V *topic coherence* measure, which can be used to compare different topic models and subsequently choose a model with a suitable number of topics. More details on the TC-W2V are included in the paper:
 	
 	An Analysis of the Coherence of Descriptors in Topic Modeling
 	D. O'Callaghan, D. Greene, J. Carthy, P. Cunningham. 
@@ -83,7 +83,7 @@ The approach involves a number of steps, listed below. Again these steps are ill
 
 ##### Step 1: Build Word2Vec Model
 
-Firstly, we need to build a Word2Vec model from all of the documents in our corpus. The script 'prep-word2vec.py' uses [Gensim](https://radimrehurek.com/gensim/) to build the model. All of the text files in the specified sub-directories are used to build the model, which is written to the file 'out/w2v-model.bin'.  
+As well as preparing the input text corpus, we also need to build a Word2Vec model from all of the documents in our corpus. The script 'prep-word2vec.py' uses [Gensim](https://radimrehurek.com/gensim/) to build the model. All of the text files in the specified sub-directories are used to build the model, which is written to the file 'out/w2v-model.bin'.  
 
 	python prep-word2vec.py data/sample/month1 data/sample/month2 data/sample/month3 -o out
 
@@ -93,7 +93,7 @@ Next, we use topic coherence based on the pre-built Word2Vec model to evaluate a
 
 	python find-window-topics.py data/month1.pkl data/month2.pkl data/month3.pkl -k 4,10 -o out -m out/w2v-model.bin 
 
-The script will apply NMF to each time window and each value of *k*, writing a result file each time to the directory 'out'. The output of the above for the sample data will also include the following recommendations for the number of topics for each of the three time windows:
+The script will apply NMF to each time window for each value of *k*, writing a result file each time to the directory 'out'. The output of the above for the sample data will also include the following recommendations for the number of topics for each of the three time windows:
 
 	Top recommendations for number of topics for 'month1': 6,5,9
 	...
