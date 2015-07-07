@@ -7,7 +7,7 @@ import logging as log
 from optparse import OptionParser
 import numpy as np
 import text.util
-import unsupervised.nmf, unsupervised.rankings, unsupervised.util, unsupervised.coherence
+import unsupervised.nmf, unsupervised.rankings, unsupervised.coherence
 
 # --------------------------------------------------------------
 
@@ -91,7 +91,7 @@ def main():
 				log.info("Model coherence (k=%d) = %.4f" % (k,coherence_scores[k]) )
 			# Write results
 			results_out_path = os.path.join( dir_out, "%s_windowtopics_k%02d.pkl"  % (window_name, k) )
-			unsupervised.util.save_nmf_results( results_out_path, term_rankings, partition, impl.W, impl.H, terms, topic_labels )
+			unsupervised.nmf.save_nmf_results( results_out_path, doc_ids, terms, term_rankings, partition, impl.W, impl.H, topic_labels )
 
 		# Need to select value of k?
 		if len(coherence_scores) > 0:

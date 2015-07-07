@@ -1,7 +1,7 @@
+import logging as log
 import numpy as np
-
-import warnings
-warnings.simplefilter("ignore", DeprecationWarning)
+from sklearn import decomposition
+from sklearn.externals import joblib
 
 # --------------------------------------------------------------
 
@@ -19,7 +19,6 @@ class SklNMF:
 		"""
 		Apply NMF to the specified document-term matrix X.
 		"""
-		from sklearn import decomposition
 		self.W = None
 		self.H = None
 		model = decomposition.NMF(init=self.init_strategy, n_components=k, max_iter=self.max_iters)
@@ -44,60 +43,36 @@ class SklNMF:
 			raise ValueError("No results for previous run available")
 		return np.argmax( self.W, axis = 1 ).flatten().tolist()		
 
-class NimfaNMF:
+# --------------------------------------------------------------
+
+def generate_doc_rankings( W ):
+	'''
+	Rank document indices, based on values in a W factor matrix produced by NMF.
+	'''
+	doc_rankings = []
+	k = W.shape[1]
+	for topic_index in range(k):
+		w = np.array( W[:,topic_index] )
+		top_indices = np.argsort(w)[::-1]
+		doc_rankings.append(top_indices)
+	return doc_rankings
+
+def save_nmf_results( out_path, doc_ids, terms, term_rankings, partition, W, H, topic_labels=None ):
 	"""
-	Wrapper class backed by the Nimfa package NMF implementation.
+	Save output of NMF using Joblib. Note that we use the scikit-learn bundled version of joblib.
 	"""
-	def __init__( self, max_iters = 100, init_strategy = "random", update = "euclidean", method = "lsnmf" ):
-		self.max_iters = max_iters
-		self.init_strategy = init_strategy
-		self.W = None
-		self.H = None
-		self.update = update
-		self.test_conv = 10
-		self.method = method
+	# no labels? generate some standard ones
+	if topic_labels is None:
+		topic_labels = []
+		for i in range( len(term_rankings) ):
+			topic_labels.append( "C%02d" % (i+1) )
+	log.info( "Saving NMF results to %s" % out_path )
+	joblib.dump((doc_ids, terms, term_rankings, partition, W, H, topic_labels), out_path ) 
 
-	def apply( self, X, k = 2 ):
-		"""
-		Apply NMF to the specified document-term matrix X.
-		"""
-		import nimfa
-		self.W = None
-		self.H = None
-		initialize_only = self.max_iters < 1
-		if self.update == "euclidean":
-			objective = "fro"
-		else:
-			objective = "div"
-		alg = nimfa.mf(X, method = self.method, max_iter = self.max_iters, rank = k, seed = self.init_strategy, update = self.update, objective = objective, test_conv = self.test_conv ) 
-		res = nimfa.mf_run(alg)
-		# TODO: fix
-		try:
-			self.W = res.basis().todense() 
-			self.H = res.coef().todense()
-		except:
-			self.W = res.basis()
-			self.H = res.coef()
-		# last number of iterations
-		self.n_iter = res.n_iter
-
-	def rank_terms( self, topic_index, top = -1 ):
-		"""
-		Return the top ranked terms for the specified topic, generated during the last NMF run.
-		"""
-		if self.H is None:
-			raise ValueError("No results for previous run available")
-		h = np.array( self.H[topic_index,:] ).flatten()
-		# NB: reverse ordering
-		top_indices = np.argsort(h)[::-1]
-		# truncate
-		if top < 1 or top > len(top_indices):
-			return top_indices
-		return top_indices[0:top]
-
-	def generate_partition( self ):
-		if self.W is None:
-			raise ValueError("No results for previous run available")
-		return np.argmax( self.W, axis = 1 ).flatten().tolist()[0]
-
+def load_nmf_results( in_path ):
+	"""
+	Load NMF results using Joblib. Note that we use the scikit-learn bundled version of joblib.
+	"""
+	(doc_ids, terms, term_rankings, partition, W, H, labels) = joblib.load( in_path )
+	return (doc_ids, terms, term_rankings, partition, W, H, labels)
 

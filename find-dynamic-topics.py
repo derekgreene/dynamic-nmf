@@ -8,7 +8,7 @@ from optparse import OptionParser
 import numpy as np
 import sklearn.preprocessing
 import text.util
-import unsupervised.nmf, unsupervised.rankings, unsupervised.util, unsupervised.coherence
+import unsupervised.nmf, unsupervised.rankings, unsupervised.coherence
 
 # --------------------------------------------------------------
 
@@ -121,7 +121,7 @@ def main():
 	for window_model_path in args:
 		# Load the cached time window
 		window_name = os.path.splitext( os.path.split( window_model_path )[-1] )[0]
-		(term_rankings, partition, W, H, terms, window_topic_labels) = unsupervised.util.load_nmf_results( window_model_path )
+		(doc_ids, terms, term_rankings, partition, W, H, window_topic_labels) = unsupervised.nmf.load_nmf_results( window_model_path )
 		log.info("Loaded %d time window topics from %s" % (len(term_rankings),window_model_path) )
 		collection.add_topic_model( H, terms, window_topic_labels )
 
@@ -161,7 +161,7 @@ def main():
 			log.info("Model coherence (k=%d) = %.4f" % (k,coherence_scores[k]) )
 		# Write results
 		results_out_path = os.path.join( dir_out, "dynamictopics_k%02d.pkl"  % (k) )
-		unsupervised.util.save_nmf_results( results_out_path, term_rankings, partition, impl.W, impl.H, terms, topic_labels )
+		unsupervised.nmf.save_nmf_results( results_out_path, collection.topic_ids, all_terms, term_rankings, partition, impl.W, impl.H, topic_labels )
 
 	# Need to select value of k?
 	if len(coherence_scores) > 0:

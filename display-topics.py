@@ -7,7 +7,7 @@ https://code.google.com/p/prettytable/
 """
 import logging as log
 from optparse import OptionParser
-import unsupervised.util, unsupervised.rankings
+import unsupervised.nmf, unsupervised.rankings
 
 # --------------------------------------------------------------
 
@@ -21,10 +21,10 @@ def main():
 
 	# Load each cached ranking set
 	for in_path in args:
-		(term_rankings, partition, W, H, terms, labels) = unsupervised.util.load_nmf_results( in_path )
-		m = unsupervised.rankings.term_rankings_size( term_rankings )
+		(doc_ids, terms, term_rankings, partition, W, H, labels) = unsupervised.nmf.load_nmf_results( in_path )
 		log.info( "- Loaded model with %d topics from %s" % (len(term_rankings), in_path) )
 		log.info( "Top %d terms for %d topics:" % (options.top,len(term_rankings)) )
+		m = unsupervised.rankings.term_rankings_size( term_rankings )
 		print unsupervised.rankings.format_term_rankings( term_rankings, labels, min(options.top,m) )
 
 # --------------------------------------------------------------
