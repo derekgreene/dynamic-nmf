@@ -41,7 +41,7 @@ When the process has completed, we can view the descriptiors (i.e. the top ranke
 
 	python display-topics.py out/month1_windowtopics_k05.pkl out/month2_windowtopics_k05.pkl out/month3_windowtopics_k05.pkl
 
-The top terms and document IDs can also be exported from a NMF results file to two comma-separated files. For instance, to export the top 50 terms and document IDs:
+The top terms and document IDs can be exported from a NMF results file to two comma-separated files using 'export-csv.py'. For instance, to export the top 50 terms and document IDs for a single results file:
 
 	python export-csv.py out/month1_windowtopics_k05.pkl -t 50
 
