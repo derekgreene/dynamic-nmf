@@ -6,7 +6,8 @@ import os, sys, random, operator
 import logging as log
 from optparse import OptionParser
 import numpy as np
-import text.util, unsupervised.nmf, unsupervised.rankings, unsupervised.util, unsupervised.coherence
+import text.util
+import unsupervised.nmf, unsupervised.rankings, unsupervised.util, unsupervised.coherence
 
 # --------------------------------------------------------------
 
@@ -24,7 +25,7 @@ def main():
 		parser.error( "Must specify at least one time window matrix file" )
 	log.basicConfig(level=20, format='%(message)s')
 
-	# Find range for K
+	# Parse user-specified range for number of topics K
 	if options.krange is None:
 		parser.error("Must specific number of topics, or a range for the number of topics")
 	parts = options.krange.split(",")
@@ -51,7 +52,7 @@ def main():
 	np.random.seed( options.seed )
 	random.seed( options.seed )	
 
-	# Choose implementation
+	# NMF implementation
 	impl = unsupervised.nmf.SklNMF( max_iters = options.maxiter, init_strategy = "nndsvd" )
 
 	# Process each specified time window document-term matrix
@@ -62,13 +63,13 @@ def main():
 		(X,terms,doc_ids) = text.util.load_corpus( matrix_filepath )
 		log.info( "Read %dx%d document-term matrix" % ( X.shape[0], X.shape[1] ) )
 
-		# Generate NMF topic model for the specified range of numbers of topics
+		# Generate window topic model for the specified range of numbers of topics
 		coherence_scores = {}
 		for k in range(kmin,kmax+1):
 			log.info( "Applying window topic modeling to matrix for k=%d topics ..." % k )
 			impl.apply( X, k )
 			log.info( "Generated %dx%d factor W and %dx%d factor H" % ( impl.W.shape[0], impl.W.shape[1], impl.H.shape[0], impl.H.shape[1] ) )
-			# create a disjoint partition of documents
+			# Create a disjoint partition of documents
 			partition = impl.generate_partition()
 			# Create topic labels
 			topic_labels = []
@@ -83,7 +84,7 @@ def main():
 			# Print out the top terms?
 			if options.verbose:
 				print unsupervised.rankings.format_term_rankings( term_rankings, 10 )
-			# Evaluate?
+			# Evaluate topic coherence of this topic model?
 			if not validation_measure is None:
 				truncated_term_rankings = unsupervised.rankings.truncate_term_rankings( term_rankings, options.top )
 				coherence_scores[k] = validation_measure.evaluate_rankings( truncated_term_rankings )

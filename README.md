@@ -50,7 +50,7 @@ In this case the results will be written to 'out/dynamictopics_k05.pkl'. When th
 
 	python display-topics.py out/dynamictopics_k05.pkl
 
-For the sample corpus, the output for the top 10 terms for 5 topics should look like:
+For the sample corpus, the output for the top 10 terms for 5 dynamic topics should look like:
 
 	+------+------------+-----------+------------+--------+----------+
 	| Rank | D01        | D02       | D03        | D04    | D05      |
@@ -98,4 +98,33 @@ The script will apply NMF to each time window and each value of *k*, writing a r
 	Top recommendations for number of topics for 'month3': 6,7,4
 
 ##### Step 3: Dynamic Topic Modeling 
-TODO
+
+We can also run automatic selection for the number of dynamic topics, by running the script 'find-dynamic-topics.py' and specifying a comma-separated range *kmin,kmax* and the path to the Word2Vec model built on the entire corpus:
+
+	python find-dynamic-topics.py out/month1_windowtopics_k05.pkl out/month2_windowtopics_k05.pkl out/month3_windowtopics_k05.pkl -k 4,10 -o out -m out/w2v-model.bin 
+
+Applying this to the sample corpus for the range [4,10] results in the recommendation of 6 topics:
+
+	Top recommendations for number of dynamic topics: 6,8,7
+
+The corresponding results will be written to 'out/dynamictopics_k06.pkl'. When the process has completed, we can view the dynamic topic descriptiors using:
+
+	python display-topics.py out/dynamictopics_k06.pkl
+
+For the sample corpus, the output for the top 10 terms for 6 dynamic topics should look like:
+
+	+------+------------+-----------+------------+--------+----------+----------+
+	| Rank | D01        | D02       | D03        | D04    | D05      | D06      |
+	+------+------------+-----------+------------+--------+----------+----------+
+	|    1 | blair      | chelsea   | people     | band   | growth   | film     |
+	|    2 | labour     | game      | mobile     | music  | economy  | best     |
+	|    3 | election   | club      | users      | album  | oil      | award    |
+	|    4 | government | united    | software   | best   | sales    | awards   |
+	|    5 | minister   | arsenal   | microsoft  | show   | prices   | actor    |
+	|    6 | brown      | league    | technology | number | market   | director |
+	|    7 | party      | players   | net        | chart  | bank     | oscar    |
+	|    8 | prime      | cup       | phone      | awards | economic | films    |
+	|    9 | howard     | liverpool | computer   | rock   | profits  | actress  |
+	|   10 | told       | football  | security   | song   | company  | star     |
+	+------+------------+-----------+------------+--------+----------+----------+
+
