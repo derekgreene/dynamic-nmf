@@ -7,7 +7,7 @@ Standard topic modeling approaches assume the order of documents does not matter
 Details of this approach are described in the following paper ([Link](http://arxiv.org/abs/1505.07302)):
 
 	Unveiling the Political Agenda of the European Parliament Plenary: A Topical Analysis
-	Derek Greene, James P. Cross (2015)
+	D. Greene, J. P. Cross, 2015.
 	
 This repository contains a Python reference implementation of the above approach.
 
@@ -69,5 +69,33 @@ For the sample corpus, the output for the top 10 terms for 5 topics should look 
 
 ### Advanced Usage
 
-The examples above use a user-specified number of topics, for .
+The examples above involve using a pre-determined number of topics, for both window topics and dynamic topics. In cases where this number is not known in advance, a variety of strategies exist for automatically or semi-automatically choosing a number of topics. This package contains an implementation of the TC-W2V *topic coherence* measure, which can be used to compare different topic models and subsequently choose a model with a suitable number of topics. More details on the TC-W2V are included in the paper:
+	
+	An Analysis of the Coherence of Descriptors in Topic Modeling
+	D. O'Callaghan, D. Greene, J. Carthy, P. Cunningham. 
+	Expert Systems with Applications (ESWA), 2015.
 
+The approach involves a number of steps, listed below. Again these steps are illustrated using the sample corpus.
+
+##### Step 1: Build Word2Vec Model
+
+Firstly, we need to build a Word2Vec model from all of the documents in our corpus. The script 'prep-word2vec.py' uses [Gensim](https://radimrehurek.com/gensim/) to build the model. All of the text files in the specified sub-directories are used to build the model, which is written to the file 'out/w2v-model.bin'.  
+
+	python prep-word2vec.py data/sample/month1 data/sample/month2 data/sample/month3 -o out
+
+##### Step 2: Window Topic Modeling 
+
+Next, we use topic coherence based on the pre-built Word2Vec model to evaluate a range of different values for the number of topics *k* for each time window. We use the same 'find-window-topics.py' script, but specify a comma-separated range of values to try *(kmin,kmax)* (e.g. 4,10 will test all numbers of topics from *k=4* to *k=10*), and also specify the path to Word2Vec model file:
+
+	python find-window-topics.py data/month1.pkl data/month2.pkl data/month3.pkl -k 4,10 -o out -m out/w2v-model.bin 
+
+The script will apply NMF to each time window and each value of *k*, writing a result file each time to the directory 'out'. The output of the above for the sample data will also include the following recommendations for the number of topics for each of the three time windows:
+
+	Top recommendations for number of topics for 'month1': 6,5,9
+	...
+	Top recommendations for number of topics for 'month2': 5,6,7
+	...
+	Top recommendations for number of topics for 'month3': 6,7,4
+
+##### Step 3: Dynamic Topic Modeling 
+TODO
