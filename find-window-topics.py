@@ -83,7 +83,7 @@ def main():
 				term_rankings.append(term_ranking)
 			# Print out the top terms?
 			if options.verbose:
-				print unsupervised.rankings.format_term_rankings( term_rankings, 10 )
+				print unsupervised.rankings.format_term_rankings( term_rankings, top=10 )
 			# Evaluate topic coherence of this topic model?
 			if not validation_measure is None:
 				truncated_term_rankings = unsupervised.rankings.truncate_term_rankings( term_rankings, options.top )
