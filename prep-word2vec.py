@@ -36,7 +36,7 @@ def main():
 	if options.stoplist_file is None:
 		stopwords = text.util.load_stopwords()
 	else:
-		log.info( "Using custom stopwords from", options.stoplist_file )
+		log.info( "Using custom stopwords from %s" % options.stoplist_file )
 		stopwords = text.util.load_stopwords( options.stoplist_file )
 
 	# Process all specified directories
