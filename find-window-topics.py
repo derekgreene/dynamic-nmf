@@ -30,17 +30,17 @@ def main():
 		parser.error("Must specific number of topics, or a range for the number of topics")
 	parts = options.krange.split(",")
 	kmin = int(parts[0])
+	validation_measure = None
 	if len(parts) == 1:
 		kmax = kmin
-		validation_measure = None
 	else:
 		kmax = int(parts[1])
-		if options.model_path is None:
-			parser.error("Must specific a file containing a Word2Vec model when performing automatic selection of number of topics")
-		log.info( "Loading Word2Vec model from %s ..." % options.model_path )
-		import gensim
-		model = gensim.models.Word2Vec.load(options.model_path) 
-		validation_measure = unsupervised.coherence.WithinTopicMeasure( unsupervised.coherence.ModelSimilarity(model) )
+		# any word2vec model specified?
+		if not options.model_path is None:
+			log.info( "Loading Word2Vec model from %s ..." % options.model_path )
+			import gensim
+			model = gensim.models.Word2Vec.load(options.model_path) 
+			validation_measure = unsupervised.coherence.WithinTopicMeasure( unsupervised.coherence.ModelSimilarity(model) )
 
 	# Output directory for results
 	if options.dir_out is None:
