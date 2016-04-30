@@ -5,7 +5,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 
 # --------------------------------------------------------------
 
-token_pattern = re.compile(ur"\b\w\w+\b", re.U)
+token_pattern = re.compile(r"\b\w\w+\b", re.U)
 
 def custom_tokenizer( s, min_term_length = 2 ):
 	"""

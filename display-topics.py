@@ -33,7 +33,7 @@ def main():
 			current_end = min(current+column_size,len(term_rankings))
 			current_rankings = term_rankings[current:current_end]
 			current_labels = labels[current:current_end]
-			print( unsupervised.rankings.format_term_rankings( current_rankings, current_labels, min(options.top,m) ) )
+			log.info( unsupervised.rankings.format_term_rankings( current_rankings, current_labels, min(options.top,m) ) )
 			current += column_size
 
 # --------------------------------------------------------------
