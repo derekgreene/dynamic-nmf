@@ -138,10 +138,25 @@ To track the individual topics from each window that contribute to the overall d
 
 To view tracking for only a subset of dynamic topics, specify one or more topic numbers comma separated:
 
-	python track-dynamic-topics.py out/dynamictopics_k06.pkl out/*windowtopics*.pkl -d 4
+	python track-dynamic-topics.py out/dynamictopics_k06.pkl out/*windowtopics*.pkl -d 1,4
 
-For the sample corpus, the output for tracking the dynamic topic D04 will display the top-ranked terms for both the overall dynamic topic and each relevant time window topic:
+For the sample corpus, the output for tracking the dynamic topics D01 and D04 will contain the top-ranked terms for both the overall dynamic topics and the associated time window topics:
 
+	- Dynamic Topic: D01
+	+------+------------+-------------+------------+------------+
+	| Rank | Overall    | Window 1    | Window 2   | Window 3   |
+	+------+------------+-------------+------------+------------+
+	|    1 | mobile     | microsoft   | people     | mobile     |
+	|    2 | people     | mobile      | technology | phone      |
+	|    3 | users      | users       | computer   | people     |
+	|    4 | phone      | software    | phone      | phones     |
+	|    5 | software   | people      | games      | broadband  |
+	|    6 | technology | security    | users      | service    |
+	|    7 | microsoft  | net         | software   | technology |
+	|    8 | net        | information | sites      | tv         |
+	|    9 | computer   | programs    | site       | digital    |
+	|   10 | service    | computer    | online     | video      |
+	+------+------------+-------------+------------+------------+
 	- Dynamic Topic: D04
 	+------+---------+----------+----------+
 	| Rank | Overall | Window 2 | Window 3 |
