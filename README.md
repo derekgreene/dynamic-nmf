@@ -132,3 +132,29 @@ For the sample corpus, the output for the top 10 terms for 6 dynamic topics shou
 	|   10 | told       | football  | security   | song   | company  | star     |
 	+------+------------+-----------+------------+--------+----------+----------+
 
+To track the individual topics from each window that contribute to the overall dynamic topics, run the script 'track-dynamic-topics.py', specifying the file path for the output of dynamic topic modeling, following by the paths for all of the individual window topic models (ordered by time window). Following on from the example the above, to see the tracking for all dynamic topics, run:
+
+	python track-dynamic-topics.py out/dynamictopics_k06.pkl out/*windowtopics*.pkl
+
+To view tracking for only a subset of dynamic topics, specify one or more topic numbers comma separated:
+
+	python track-dynamic-topics.py out/dynamictopics_k06.pkl out/*windowtopics*.pkl -d 4
+
+For the sample corpus, the output for tracking the dynamic topic D04 will display the top-ranked terms for both the overall dynamic topic and each relevant time window topic:
+
+	- Dynamic Topic: D04
+	+------+---------+----------+----------+
+	| Rank | Overall | Window 2 | Window 3 |
+	+------+---------+----------+----------+
+	|    1 | band    | album    | music    |
+	|    2 | music   | band     | band     |
+	|    3 | album   | music    | best     |
+	|    4 | best    | number   | show     |
+	|    5 | show    | chart    | album    |
+	|    6 | number  | best     | rock     |
+	|    7 | chart   | awards   | singer   |
+	|    8 | awards  | show     | number   |
+	|    9 | rock    | song     | awards   |
+	|   10 | song    | top      | song     |
+	+------+---------+----------+----------+
+	
