@@ -65,7 +65,13 @@ def main():
 		# create table header
 		header = ["Rank", "Overall"]
 		for t in all_tracked_topics[i]:
-			header.append( "Window %d" % t[0] )
+			field = "Window %d" % t[0]
+			# deal with multiple window topics from same window
+			suffix = 1
+			while field in header:
+				suffix += 1
+				field = "Window %d(%d)" % (t[0],suffix)
+			header.append( field )
 		tab = PrettyTable(header)
 		tab.align["Rank"] = "r"
 		for label in header[1:]:

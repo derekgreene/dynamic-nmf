@@ -132,7 +132,7 @@ For the sample corpus, the output for the top 10 terms for 6 dynamic topics shou
 	|   10 | told       | football  | security   | song   | company  | star     |
 	+------+------------+-----------+------------+--------+----------+----------+
 
-To track the individual topics from each window that contribute to the overall dynamic topics, run the script 'track-dynamic-topics.py', specifying the file path for the output of dynamic topic modeling, following by the paths for all of the individual window topic models (ordered by time window). Following on from the example the above, to see the tracking for all dynamic topics, run:
+To track the individual topics from each window that contribute to the overall dynamic topics, run the script 'track-dynamic-topics.py', specifying the file path for the output of dynamic topic modeling, following by the paths for all of the individual window topic models (ordered by time window). Note that multiple topics in a single time window can be related to a single dynamic topic. Following on from the example the above, to see the tracking for all dynamic topics, run:
 
 	python track-dynamic-topics.py out/dynamictopics_k06.pkl out/*windowtopics*.pkl
 
