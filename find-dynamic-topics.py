@@ -162,6 +162,7 @@ def main():
 		# Write results
 		results_out_path = os.path.join( dir_out, "dynamictopics_k%02d.pkl"  % (k) )
 		unsupervised.nmf.save_nmf_results( results_out_path, collection.topic_ids, all_terms, term_rankings, partition, impl.W, impl.H, topic_labels )
+		unsupervised.util.save_nmf_factors( results_out_path, np.array( impl.W ), np.array( impl.H ), doc_ids, terms )
 
 	# Need to select value of k?
 	if len(coherence_scores) > 0:
