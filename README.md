@@ -7,7 +7,7 @@ Standard topic modeling approaches assume the order of documents does not matter
 Details of this approach are described in the following paper ([Link](http://arxiv.org/abs/1607.03055)):
 
 	Exploring the Political Agenda of the European Parliament Using a Dynamic Topic Modeling Approach
-	Derek Greene, James P. Cross, 2016.
+	Derek Greene, James P. Cross. Political Analysis, 2016.
 	
 This repository contains a Python reference implementation of the above approach.
 
