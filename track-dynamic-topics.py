@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 """
+Script to track the individual topics from each window that contribute to an overall set of dynamic topics.
+
 Usage: python track-dynamic-topics.py out/dynamictopics_k05.pkl out/*windowtopics*.pkl
 """
 import os, sys
