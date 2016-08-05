@@ -91,19 +91,16 @@ def main():
 	# Parse user-specified range for number of topics K
 	if options.krange is None:
 		parser.error("Must specific number of topics, or a range for the number of topics")
-	parts = options.krange.split(",")
-	kmin = int(parts[0])
-	if len(parts) == 1:
-		kmax = kmin
-		validation_measure = None
-	else:
-		kmax = int(parts[1])
-		if options.model_path is None:
-			parser.error("Must specific a file containing a Word2Vec model when performing automatic selection of number of topics")
-		log.info( "Loading Word2Vec model from %s ..." % options.model_path )
-		import gensim
-		model = gensim.models.Word2Vec.load(options.model_path) 
-		validation_measure = unsupervised.coherence.WithinTopicMeasure( unsupervised.coherence.ModelSimilarity(model) )
+	kparts = options.krange.split(",")
+	kmin = int(kparts[0])
+
+	# Set random state
+	random_seed = options.seed
+	if random_seed < 0:
+		random_seed = random.randint(1,100000)
+	np.random.seed( random_seed )
+	random.seed( random_seed )			
+	log.info("Using random seed %s" % random_seed )
 
 	# Output directory for results
 	if options.dir_out is None:
@@ -111,9 +108,18 @@ def main():
 	else:
 		dir_out = options.dir_out	
 
-	# Set random state
-	np.random.seed( options.seed )
-	random.seed( options.seed )	
+	# Will we use automatic model selection?
+	validation_measure = None
+	if len(kparts) == 1:
+		kmax = kmin
+	else:
+		kmax = int(kparts[1])
+		# any word2vec model specified?
+		if not options.model_path is None:
+			log.info( "Loading Word2Vec model from %s ..." % options.model_path )
+			import gensim
+			model = gensim.models.Word2Vec.load(options.model_path) 
+			validation_measure = unsupervised.coherence.WithinTopicMeasure( unsupervised.coherence.ModelSimilarity(model) )
 
 	# Process each specified window topic model
 	log.info("- Processing individual time window topic models ...")
@@ -131,7 +137,7 @@ def main():
 	log.debug( "Matrix stats: range=[%.2f,%.2f] mean=%.2f" % ( np.min(M), np.mean(M), np.max(M) ) )	
 
 	# NMF implementation
-	impl = unsupervised.nmf.SklNMF( max_iters = options.maxiter, init_strategy = "nndsvd" )
+	impl = unsupervised.nmf.SklNMF( max_iters = options.maxiter, init_strategy = "nndsvd", random_seed = random_seed )
 
 	# Generate window topic model for the specified range of numbers of topics
 	coherence_scores = {}
@@ -162,7 +168,6 @@ def main():
 		# Write results
 		results_out_path = os.path.join( dir_out, "dynamictopics_k%02d.pkl"  % (k) )
 		unsupervised.nmf.save_nmf_results( results_out_path, collection.topic_ids, all_terms, term_rankings, partition, impl.W, impl.H, topic_labels )
-		unsupervised.util.save_nmf_factors( results_out_path, np.array( impl.W ), np.array( impl.H ), doc_ids, terms )
 
 	# Need to select value of k?
 	if len(coherence_scores) > 0:
