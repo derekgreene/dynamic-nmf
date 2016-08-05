@@ -9,11 +9,12 @@ class SklNMF:
 	"""
 	Wrapper class backed by the scikit-learn package NMF implementation.
 	"""
-	def __init__( self, max_iters = 100, init_strategy = "random" ):
+	def __init__( self, max_iters = 100, init_strategy = "random", random_seed = 0 ):
 		self.max_iters = 100
 		self.init_strategy = init_strategy
 		self.W = None
 		self.H = None
+		self.random_seed = random_seed
 
 	def apply( self, X, k = 2 ):
 		"""
@@ -21,7 +22,7 @@ class SklNMF:
 		"""
 		self.W = None
 		self.H = None
-		model = decomposition.NMF(init=self.init_strategy, n_components=k, max_iter=self.max_iters)
+		model = decomposition.NMF(init=self.init_strategy, n_components=k, max_iter=self.max_iters, random_state = self.random_seed)
 		self.W = model.fit_transform(X)
 		self.H = model.components_			
 		
