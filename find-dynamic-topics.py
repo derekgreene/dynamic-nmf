@@ -134,7 +134,7 @@ def main():
 	# Create the topic-term matrix
 	M, all_terms = collection.create_matrix()
 	log.info( "Created topic-term matrix of size %dx%d" % M.shape )
-	log.debug( "Matrix stats: range=[%.2f,%.2f] mean=%.2f" % ( np.min(M), np.mean(M), np.max(M) ) )	
+	log.debug( "Matrix stats: range=[%.3f,%.3f] mean=%.3f" % ( np.min(M), np.max(M), np.mean(M) ) )
 
 	# NMF implementation
 	impl = unsupervised.nmf.SklNMF( max_iters = options.maxiter, init_strategy = "nndsvd", random_seed = random_seed )
