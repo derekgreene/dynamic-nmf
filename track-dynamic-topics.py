@@ -2,7 +2,8 @@
 """
 Script to track the individual topics from each window that contribute to an overall set of dynamic topics.
 
-Usage: python track-dynamic-topics.py out/dynamictopics_k05.pkl out/*windowtopics*.pkl
+Usage: 
+python track-dynamic-topics.py out/dynamictopics_k05.pkl out/*windowtopics*.pkl
 """
 import os, sys
 import logging as log
@@ -26,7 +27,7 @@ def main():
 	dynamic_res = unsupervised.nmf.load_nmf_results( dynamic_in_path )
 	dynamic_k = len(dynamic_res[2])
 	dynamic_term_rankings = unsupervised.rankings.truncate_term_rankings( dynamic_res[2], options.top )
-	log.info( "- Loaded model with %d dynamic topics from %s" % (dynamic_k, dynamic_in_path) )
+	log.info( "Loaded model with %d dynamic topics from %s" % (dynamic_k, dynamic_in_path) )
 
 	# Create a map of window topic label -> dynamic topic
 	assigned_window_map = {}
@@ -46,7 +47,7 @@ def main():
 	window_num = 0
 	for in_path in args[1:]:
 		window_num += 1
-		log.info( "- Reading window topics for window %d from %s ..." % ( window_num, in_path ) )
+		log.info( "Reading window topics for window %d from %s ..." % ( window_num, in_path ) )
 		# Load window results: (doc_ids, terms, term_rankings, partition, W, H, labels)
 		window_res = unsupervised.nmf.load_nmf_results( in_path )
 		window_k = len(window_res[2])
@@ -63,7 +64,7 @@ def main():
 		if (not options.dynamic_required is None) and ( not (i+1) in dynamic_required ) :
 			continue
 		dynamic_topic_label = dynamic_res[6][i]
-		print("- Dynamic Topic: %s" % dynamic_topic_label )
+		log.info("- Dynamic Topic: %s" % dynamic_topic_label )
 		# create table header
 		header = ["Rank", "Overall"]
 		for t in all_tracked_topics[i]:
