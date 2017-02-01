@@ -73,7 +73,12 @@ def main():
 		coherence_scores = {}
 		for k in range(kmin,kmax+1):
 			log.info( "Applying window topic modeling to matrix for k=%d topics ..." % k )
-			impl.apply( X, k )
+			try:
+				impl.apply( X, k )
+			except IndexError as e:
+				# a sklearn error can happen when applying NMF for high values of K and very small datasets
+				log.warning( "Error applying NMF for k=%d: %s" % ( k, str(e) ) )
+				break
 			log.info( "Generated %dx%d factor W and %dx%d factor H" % ( impl.W.shape[0], impl.W.shape[1], impl.H.shape[0], impl.H.shape[1] ) )
 			# Create a disjoint partition of documents
 			partition = impl.generate_partition()
