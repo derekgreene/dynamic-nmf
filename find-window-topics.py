@@ -69,9 +69,15 @@ def main():
 		(X,terms,doc_ids) = text.util.load_corpus( matrix_filepath )
 		log.info( "Read %dx%d document-term matrix" % ( X.shape[0], X.shape[1] ) )
 
+		# Ensure that value of kmin and kmax are not greater than the number of documents
+		num_docs = len(doc_ids)
+		actual_kmin = min( num_docs, kmin )
+		actual_kmax = min( num_docs, kmax )
+
 		# Generate window topic model for the specified range of numbers of topics
+		log.info( "Generating models in range [%d,%d] ..." % ( actual_kmin, actual_kmax ) )
 		coherence_scores = {}
-		for k in range(kmin,kmax+1):
+		for k in range(actual_kmin,actual_kmax+1):
 			log.info( "Applying window topic modeling to matrix for k=%d topics ..." % k )
 			try:
 				impl.apply( X, k )
