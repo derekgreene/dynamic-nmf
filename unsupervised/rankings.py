@@ -54,3 +54,28 @@ def format_term_rankings( term_rankings, labels = None, top = 10 ):
 				row.append( ranking[pos] ) 
 		tab.add_row( row )
 	return tab
+
+def format_term_rankings_long( term_rankings, labels = None, top = 10 ):
+	"""
+	Format a list of multiple term rankings using lists.
+	"""
+	if labels is None:
+		labels = []
+		for i in range( len(term_rankings) ):
+			labels.append("C%02d" % (i+1) )	
+	max_label_len = 0
+	for label in labels:
+		max_label_len = max(max_label_len,len(label))
+	max_label_len += 1
+
+	s = ""
+	for i, label in enumerate(labels):
+		s += label.ljust(max_label_len)
+		s += ": "
+		sterms = ""
+		for term in term_rankings[i][0:top]:
+			if len(sterms) > 0:
+				sterms += ", "
+			sterms += term
+		s += sterms + "\n"
+	return s
