@@ -35,7 +35,7 @@ The result of this process will be a collection of Joblib binary files (*.pkl an
 ##### Step 2: Window Topic Modeling 
 Once the data has been pre-processed, the next step is to generate the *window topics*, where a topic model is created by applying NMF to each the pre-process data for each time window. For the example data, we apply it to the three months. If we want to use the same number of topics for each window (e.g. 5 topics), we can run the following, where results are written to the directory 'out':
 	
-	python find-window-topics.py data/month1.pkl data/month2.pkl data/month3.pkl -k 5 -o out
+	python find-window-topics.py data/*.pkl -k 5 -o out
 
 When the process has completed, we can view the descriptiors (i.e. the top ranked terms) for the resulting window topics as follows:
 
@@ -85,21 +85,23 @@ The approach involves a number of steps, listed below. Again these steps are ill
 
 As well as preparing the input text corpus, we also need to build a Word2Vec model from all of the documents in our corpus. The script 'prep-word2vec.py' uses [Gensim](https://radimrehurek.com/gensim/) to build the model. All of the text files in the specified sub-directories are used to build the model, which is written to the file 'out/w2v-model.bin'.  
 
-	python prep-word2vec.py data/sample/month1 data/sample/month2 data/sample/month3 -o out
+	python prep-word2vec.py data/sample -o out
 
 ##### Step 2: Window Topic Modeling 
 
 Next, we use topic coherence based on the pre-built Word2Vec model to evaluate a range of different values for the number of topics *k* for each time window. We use the same 'find-window-topics.py' script, but specify a comma-separated range of values to try *(kmin,kmax)* (e.g. 4,10 will test all numbers of topics from *k=4* to *k=10*), and also specify the path to Word2Vec model file:
 
-	python find-window-topics.py data/month1.pkl data/month2.pkl data/month3.pkl -k 4,10 -o out -m out/w2v-model.bin 
+	python find-window-topics.py data/*.pkl -k 4,10 -o out -m out/w2v-model.bin -w selected.csv
 
-The script will apply NMF to each time window for each value of *k*, writing a result file each time to the directory 'out'. The output of the above for the sample data will also include the following recommendations for the number of topics for each of the three time windows:
+The script will apply NMF to each time window for each value of *k*, writing a result file each time to the directory 'out'. The output of the above for the sample data will also include the following top 3 recommendations for the number of topics for each of the three time windows:
 
 	Top recommendations for number of topics for 'month1': 6,5,9
 	...
 	Top recommendations for number of topics for 'month2': 5,6,7
 	...
 	Top recommendations for number of topics for 'month3': 6,7,4
+
+The top recommended number of topics for each window will be stored in selected.csv
 
 ##### Step 3: Dynamic Topic Modeling 
 

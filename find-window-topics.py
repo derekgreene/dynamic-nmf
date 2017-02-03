@@ -16,10 +16,15 @@ def main():
 	parser.add_option("--seed", action="store", type="int", dest="seed", help="initial random seed", default=1000)
 	parser.add_option("-k", action="store", type="string", dest="krange", help="number of topics", default=None)
 	parser.add_option("--maxiters", action="store", type="int", dest="maxiter", help="maximum number of iterations", default=200)
-	parser.add_option("-o","--outdir", action="store", type="string", dest="dir_out", help="base output directory (default is current directory)", default=None)
-	parser.add_option("-m", "--model", action="store", type="string", dest="model_path", help="path to Word2Vec model, if performing automatic selection of number of topics", default=None)
-	parser.add_option("-t", "--top", action="store", type="int", dest="top", help="number of top terms to use, if performing automatic selection of number of topics", default=20)
+	parser.add_option("-o","--outdir", action="store", type="string", dest="dir_out", 
+		help="base output directory (default is current directory)", default=None)
+	parser.add_option("-m", "--model", action="store", type="string", dest="model_path", 
+		help="path to Word2Vec model, if performing automatic selection of number of topics", default=None)
+	parser.add_option("-t", "--top", action="store", type="int", dest="top", 
+		help="number of top terms to use, if performing automatic selection of number of topics", default=20)
 	parser.add_option("-v", "--verbose", action="store_true", dest="verbose", help="display topic descriptors")
+	parser.add_option("-w", action="store", type="string", dest="path_selected_ks", 
+		help="output path, if writing model selection values", default=None)
 	(options, args) = parser.parse_args()
 	if( len(args) < 1 ):
 		parser.error( "Must specify at least one time window matrix file" )
@@ -36,6 +41,8 @@ def main():
 		dir_out = os.getcwd()
 	else:
 		dir_out = options.dir_out	
+		if not os.path.exists(dir_out):
+			os.makedirs(dir_out)
 
 	# Set random state
 	random_seed = options.seed
@@ -51,6 +58,8 @@ def main():
 		kmax = kmin
 	else:
 		kmax = int(kparts[1])
+		if kmax < kmin:
+			kmax = kmin
 		# any word2vec model specified?
 		if not options.model_path is None:
 			log.info( "Loading Word2Vec model from %s ..." % options.model_path )
@@ -62,6 +71,7 @@ def main():
 	impl = unsupervised.nmf.SklNMF( max_iters = options.maxiter, init_strategy = "nndsvd" )
 
 	# Process each specified time window document-term matrix
+	selected_ks = []
 	for matrix_filepath in args:
 		# Load the cached corpus
 		window_name = os.path.splitext( os.path.split( matrix_filepath )[-1] )[0]
@@ -110,13 +120,19 @@ def main():
 			results_out_path = os.path.join( dir_out, "%s_windowtopics_k%02d.pkl"  % (window_name, k) )
 			unsupervised.nmf.save_nmf_results( results_out_path, doc_ids, terms, term_rankings, partition, impl.W, impl.H, topic_labels )
 
-		# Need to select value of k?
+		# Need to select best value of k?
 		if len(coherence_scores) > 0:
 			sx = sorted(coherence_scores.items(), key=operator.itemgetter(1))
 			sx.reverse()
 			top_k = [ p[0] for p in sx ][0:min(3,len(sx))]
 			log.info("- Top recommendations for number of topics for '%s': %s" % (window_name,",".join(map(str, top_k))) )
+			selected_ks.append( [matrix_filepath, top_k[0]] )
 
+	if not options.path_selected_ks is None:
+		log.info("Writing selected numbers of topics for %d window datasets to %s" % ( len(selected_ks), options.path_selected_ks ) )
+		with open(options.path_selected_ks, "w") as fout:
+			for pair in selected_ks:
+				fout.write("%s,%d\n" % ( pair[0], pair[1] ) )
 
 # --------------------------------------------------------------
 
