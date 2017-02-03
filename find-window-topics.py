@@ -2,7 +2,7 @@
 """
 Tool to generate a NMF topic model on one or more corpora, using a fixed number of topics.
 """
-import os, sys, random, operator
+import os, os.path, sys, random, operator
 import logging as log
 from optparse import OptionParser
 import numpy as np
@@ -131,8 +131,10 @@ def main():
 	if not options.path_selected_ks is None:
 		log.info("Writing selected numbers of topics for %d window datasets to %s" % ( len(selected_ks), options.path_selected_ks ) )
 		with open(options.path_selected_ks, "w") as fout:
+			fout.write("window,k\n")
 			for pair in selected_ks:
-				fout.write("%s,%d\n" % ( pair[0], pair[1] ) )
+				window_id = os.path.splitext( os.path.split(pair[0])[-1] )[0]
+				fout.write("%s,%d\n" % ( window_id, pair[1] ) )
 
 # --------------------------------------------------------------
 
