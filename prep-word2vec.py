@@ -21,7 +21,7 @@ def main():
 	parser.add_option("-d","--dimensions", action="store", type="int", dest="dimensions", help="the dimensionality of the word vectors", default=100)
 	parser.add_option("--window", action="store", type="int", dest="w2v_window", help="the maximum distance for Word2Vec to use between the current and predicted word within a sentence", default=5)
 	parser.add_option("-o","--outdir", action="store", type="string", dest="dir_out", help="output directory (default is current directory)", default=None)
-	parser.add_option("-m", action="store", type="string", dest="model_type", help="type of word embedding model to build (sg or cbow)", default="cbow")
+	parser.add_option("-m", action="store", type="string", dest="model_type", help="type of word embedding model to build (sg or cbow)", default="sg")
 	# Parse command line arguments
 	(options, args) = parser.parse_args()
 	if( len(args) < 1 ):
