@@ -83,9 +83,9 @@ The approach involves a number of steps, listed below. Again these steps are ill
 
 ##### Step 1: Build Word2Vec Model
 
-As well as preparing the input text corpus, we also need to build a Word2Vec model from all of the documents in our corpus. The script 'prep-word2vec.py' uses [Gensim](https://radimrehurek.com/gensim/) to build the model. All of the text files in the specified sub-directories are used to build the model, which is written to the file 'out/w2v-model.bin'.  
+As well as preparing the input text corpus, we also need to build a Word2Vec model from all of the documents in our corpus. The script 'prep-word2vec.py' uses [Gensim](https://radimrehurek.com/gensim/) to build a Skipgram (SG) Word2Vec model. All of the text files in the specified sub-directories are used to build the model, which is written to the file 'out/w2v-model.bin'.  
 
-	python prep-word2vec.py data/sample -o out
+	python prep-word2vec.py data/sample -o out -m sg
 
 ##### Step 2: Window Topic Modeling 
 
@@ -95,11 +95,11 @@ Next, we use topic coherence based on the pre-built Word2Vec model to evaluate a
 
 The script will apply NMF to each time window for each value of *k*, writing a result file each time to the directory 'out'. The output of the above for the sample data will also include the following top 3 recommendations for the number of topics for each of the three time windows:
 
-	Top recommendations for number of topics for 'month1': 6,5,9
+	Top recommendations for number of topics for 'month1': 5,6,7
 	...
-	Top recommendations for number of topics for 'month2': 5,6,7
+	Top recommendations for number of topics for 'month2': 8,10,7
 	...
-	Top recommendations for number of topics for 'month3': 6,7,4
+	Top recommendations for number of topics for 'month3': 8,6,10
 
 The top recommended number of topics for each window will be stored in selected.csv
 
@@ -107,73 +107,75 @@ The top recommended number of topics for each window will be stored in selected.
 
 We can also run automatic selection for the number of dynamic topics, by running the script 'find-dynamic-topics.py' and specifying a comma-separated range *kmin,kmax* and the path to the Word2Vec model built on the entire corpus:
 
-	python find-dynamic-topics.py out/month1_windowtopics_k05.pkl out/month2_windowtopics_k05.pkl out/month3_windowtopics_k05.pkl -k 4,10 -o out -m out/w2v-model.bin 
+	python find-dynamic-topics.py out/month1_windowtopics_k05.pkl out/month2_windowtopics_k08.pkl out/month3_windowtopics_k08.pkl -k 4,10 -o out -m out/w2v-model.bin 
 
-Applying this to the sample corpus for the range [4,10] results in the recommendation of 6 topics:
+Applying this to the sample corpus for the range [4,10] results in the recommendation of 5 topics:
 
-	Top recommendations for number of dynamic topics: 6,8,7
+	Top recommendations for number of dynamic topics: 5,10,6
 
-The corresponding results will be written to 'out/dynamictopics_k06.pkl'. When the process has completed, we can view the dynamic topic descriptiors using:
+The corresponding results will be written to 'out/dynamictopics_k05.pkl'. When the process has completed, we can view the dynamic topic descriptiors using:
 
-	python display-topics.py out/dynamictopics_k06.pkl
+	python display-topics.py out/dynamictopics_k05.pkl
 
-For the sample corpus, the output for the top 10 terms for 6 dynamic topics should look similar to:
+For the sample corpus, the output for the top 10 terms for 5 dynamic topics should look similar to:
 
-	+------+------------+-----------+------------+--------+----------+----------+
-	| Rank | D01        | D02       | D03        | D04    | D05      | D06      |
-	+------+------------+-----------+------------+--------+----------+----------+
-	|    1 | blair      | chelsea   | people     | band   | growth   | film     |
-	|    2 | labour     | game      | mobile     | music  | economy  | best     |
-	|    3 | election   | club      | users      | album  | oil      | award    |
-	|    4 | government | united    | software   | best   | sales    | awards   |
-	|    5 | minister   | arsenal   | microsoft  | show   | prices   | actor    |
-	|    6 | brown      | league    | technology | number | market   | director |
-	|    7 | party      | players   | net        | chart  | bank     | oscar    |
-	|    8 | prime      | cup       | phone      | awards | economic | films    |
-	|    9 | howard     | liverpool | computer   | rock   | profits  | actress  |
-	|   10 | told       | football  | security   | song   | company  | star     |
-	+------+------------+-----------+------------+--------+----------+----------+
+	+------+------------+-----------+------------+--------+----------+
+	| Rank | D01        | D02       | D03        | D04    | D05      |
+	+------+------------+-----------+------------+--------+----------+
+	|    1 | people     | chelsea   | blair      | best   | growth   |
+	|    2 | mobile     | club      | labour     | band   | economy  |
+	|    3 | users      | game      | election   | music  | oil      |
+	|    4 | software   | arsenal   | government | film   | sales    |
+	|    5 | phone      | united    | party      | album  | market   |
+	|    6 | microsoft  | league    | brown      | show   | prices   |
+	|    7 | technology | players   | minister   | awards | bank     |
+	|    8 | net        | liverpool | howard     | number | economic |
+	|    9 | computer   | cup       | prime      | tv     | profits  |
+	|   10 | security   | football  | tory       | award  | company  |
+	+------+------------+-----------+------------+--------+----------+
 
 ##### Reviewing Results
 
-To track the individual topics from each window that contribute to the overall dynamic topics, run the script 'track-dynamic-topics.py', specifying the file path for the output of dynamic topic modeling, following by the paths for all of the individual window topic models (ordered by time window). Note that multiple topics in a single time window can be related to a single dynamic topic. Following on from the example the above, to see the tracking for all dynamic topics, run:
+To track the individual topics from each window that contribute to the overall dynamic topics, run the script 'track-dynamic-topics.py', specifying the file path for the output of dynamic topic modeling, following by the paths for all of the selected individual window topic models (ordered by time window). Make sure that the window topic files were the ones used to generate the dynamic topics.
 
-	python track-dynamic-topics.py out/dynamictopics_k05.pkl out/*windowtopics*.pkl
+Note that multiple topics in a single time window can be related to a single dynamic topic. Following on from the example the above, to see the tracking for all dynamic topics, run:
+
+	python track-dynamic-topics.py out/dynamictopics_k05.pkl out/month1_windowtopics_k05.pkl out/month2_windowtopics_k08.pkl out/month3_windowtopics_k08.pkl
 
 To view tracking for only a subset of dynamic topics, specify one or more topic numbers comma separated:
 
-	python track-dynamic-topics.py out/dynamictopics_k05.pkl out/*windowtopics*.pkl -d 1,4
+	python track-dynamic-topics.py out/dynamictopics_k05.pkl out/month1_windowtopics_k05.pkl out/month2_windowtopics_k08.pkl out/month3_windowtopics_k08.pkl -d 1,4
 
 For the sample corpus, the output for tracking the dynamic topics D01 and D04 will contain the top-ranked terms for both the overall dynamic topics and the associated time window topics:
 
 	- Dynamic Topic: D01
-	+------+------------+-------------+------------+------------+
-	| Rank | Overall    | Window 1    | Window 2   | Window 3   |
-	+------+------------+-------------+------------+------------+
-	|    1 | mobile     | microsoft   | people     | mobile     |
-	|    2 | people     | mobile      | technology | phone      |
-	|    3 | users      | users       | computer   | people     |
-	|    4 | phone      | software    | phone      | phones     |
-	|    5 | software   | people      | games      | broadband  |
-	|    6 | technology | security    | users      | service    |
-	|    7 | microsoft  | net         | software   | technology |
-	|    8 | net        | information | sites      | tv         |
-	|    9 | computer   | programs    | site       | digital    |
-	|   10 | service    | computer    | online     | video      |
-	+------+------------+-------------+------------+------------+
+	+------+------------+-------------+------------+------------+-------------+-------------+
+	| Rank | Overall    | Window 1    | Window 2   | Window 3   | Window 3(2) | Window 3(3) |
+	+------+------------+-------------+------------+------------+-------------+-------------+
+	|    1 | people     | microsoft   | people     | broadband  | virus       | mobile      |
+	|    2 | mobile     | mobile      | technology | tv         | spam        | phone       |
+	|    3 | users      | users       | phone      | digital    | software    | phones      |
+	|    4 | software   | software    | users      | high       | mail        | camera      |
+	|    5 | phone      | people      | computer   | dvd        | security    | mobiles     |
+	|    6 | microsoft  | security    | software   | service    | attacks     | people      |
+	|    7 | technology | net         | sites      | bt         | net         | cameras     |
+	|    8 | net        | information | site       | people     | microsoft   | handsets    |
+	|    9 | computer   | programs    | net        | definition | users       | technology  |
+	|   10 | security   | computer    | microsoft  | technology | search      | video       |
+	+------+------------+-------------+------------+------------+-------------+-------------+
 	- Dynamic Topic: D04
-	+------+---------+----------+----------+
-	| Rank | Overall | Window 2 | Window 3 |
-	+------+---------+----------+----------+
-	|    1 | band    | album    | music    |
-	|    2 | music   | band     | band     |
-	|    3 | album   | music    | best     |
-	|    4 | best    | number   | show     |
-	|    5 | show    | chart    | album    |
-	|    6 | number  | best     | rock     |
-	|    7 | chart   | awards   | singer   |
-	|    8 | awards  | show     | number   |
-	|    9 | rock    | song     | awards   |
-	|   10 | song    | top      | song     |
-	+------+---------+----------+----------+
+	+------+---------+----------+----------+-------------+----------+
+	| Rank | Overall | Window 1 | Window 2 | Window 2(2) | Window 3 |
+	+------+---------+----------+----------+-------------+----------+
+	|    1 | best    | film     | album    | show        | music    |
+	|    2 | band    | best     | band     | tv          | band     |
+	|    3 | music   | awards   | number   | series      | best     |
+	|    4 | film    | award    | chart    | bbc         | album    |
+	|    5 | album   | actor    | music    | super       | rock     |
+	|    6 | show    | director | awards   | channel     | show     |
+	|    7 | awards  | oscar    | best     | music       | singer   |
+	|    8 | number  | films    | song     | jackson     | number   |
+	|    9 | tv      | actress  | single   | viewers     | song     |
+	|   10 | award   | star     | top      | television  | awards   |
+	+------+---------+----------+----------+-------------+----------+
 	
