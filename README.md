@@ -179,3 +179,7 @@ For the sample corpus, the output for tracking the dynamic topics D01 and D04 wi
 	|   10 | award   | star     | top      | television  | awards   |
 	+------+---------+----------+----------+-------------+----------+
 	
+To create a partition file (i.e. a single membership topic model) for all documents in the complete corpus relative to the dynamic topics, run:
+
+	python create-dynamic-partition.py -o out/dynamic-combined.pkl out/dynamictopics_k05.pkl out/month1_windowtopics_k05.pkl out/month2_windowtopics_k08.pkl out/month3_windowtopics_k08.pkl
+
