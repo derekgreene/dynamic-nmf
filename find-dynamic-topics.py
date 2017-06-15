@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 """
 Tool to generate a dynamic topic model, by combining a set of time window topic models.
+
+Sample usage:
+
+python find-dynamic-topics.py out/month1_windowtopics_k05.pkl out/month2_windowtopics_k08.pkl out/month3_windowtopics_k08.pkl -k 4,10 -o out -m out/w2v-model.bin 
 """
 import os, sys, random, operator
 import logging as log
@@ -77,7 +81,6 @@ def main():
 	parser = OptionParser(usage="usage: %prog [options] window_topics1 window_topics2...")
 	parser.add_option("--seed", action="store", type="int", dest="seed", help="initial random seed", default=1000)
 	parser.add_option("-k", action="store", type="string", dest="krange", help="number of topics", default=None)
-	parser.add_option("-d", "--dims", action="store", type="int", dest="dimensions", help="number of dimensions to use for topic-term matrix", default=20)
 	parser.add_option("--maxiters", action="store", type="int", dest="maxiter", help="maximum number of iterations", default=200)
 	parser.add_option("-o","--outdir", action="store", type="string", dest="dir_out", help="output directory (default is current directory)", default=None)
 	parser.add_option("-m", "--model", action="store", type="string", dest="model_path", help="path to Word2Vec model, if performing automatic selection of number of topics", default=None)
