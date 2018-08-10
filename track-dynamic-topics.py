@@ -3,7 +3,7 @@
 Script to track the individual topics from each window that contribute to an overall set of dynamic topics.
 
 Usage: 
-python track-dynamic-topics.py out/dynamictopics_k05.pkl out/*windowtopics*.pkl
+python track-dynamic-topics.py -l out/dynamictopics_k05.pkl out/month1_windowtopics_k05.pkl out/month2_windowtopics_k05.pkl out/month3_windowtopics_k05.pkl
 """
 import os, sys
 import logging as log
@@ -16,6 +16,7 @@ import unsupervised.nmf, unsupervised.rankings
 def main():
 	parser = OptionParser(usage="usage: %prog [options] dynamic_topics window_topics1 window_topics2...")
 	parser.add_option("-t", "--top", action="store", type="int", dest="top", help="number of top terms to display", default=10)
+	parser.add_option("-l","--long", action="store_true", dest="long_display", help="long format display")
 	parser.add_option("-d", "--dynamic", action="store", type="string", dest="dynamic_required", help="to view a subset of dynamic topics, specify one or more topic numbers comma separated", default=None)
 	(options, args) = parser.parse_args()
 	if( len(args) < 3 ):
@@ -47,7 +48,7 @@ def main():
 	window_num = 0
 	for in_path in args[1:]:
 		window_num += 1
-		log.info( "Reading window topics for window %d from %s ..." % ( window_num, in_path ) )
+		log.debug( "Loading window topics for window %d from %s ..." % ( window_num, in_path ) )
 		# Load window results: (doc_ids, terms, term_rankings, partition, W, H, labels)
 		window_res = unsupervised.nmf.load_nmf_results( in_path )
 		window_k = len(window_res[2])
@@ -65,35 +66,43 @@ def main():
 			continue
 		dynamic_topic_label = dynamic_res[6][i]
 		log.info("- Dynamic Topic: %s" % dynamic_topic_label )
-		# create table header
-		header = ["Rank", "Overall"]
-		for t in all_tracked_topics[i]:
-			field = "Window %d" % t[0]
-			# deal with multiple window topics from same window
-			suffix = 1
-			while field in header:
-				suffix += 1
-				field = "Window %d(%d)" % (t[0],suffix)
-			header.append( field )
-		tab = PrettyTable(header)
-		tab.align["Rank"] = "r"
-		for label in header[1:]:
-			tab.align[label] = "l"
-		# add the term rows
-		for pos in range(options.top): 
-			row = [ str(pos+1) ]
-			# the term from the overall (dynamic) topic
-			row.append( dynamic_term_rankings[i][pos] )
-			# the term for each time window topic 
+		# long format?
+		if options.long_display:
+			# standard format?
+			current_labels = [ "Overall" ]
+			current_rankings = [ dynamic_term_rankings[i] ]
 			for t in all_tracked_topics[i]:
-				# have we run out of terms?
-				if len(t[1]) <= pos:
-					row.append( "" ) 
-				else:
-					row.append( t[1][pos] ) 
-			tab.add_row( row )
-		# show the table for this dynamic topic	
-		log.info( tab )
+				current_labels.append( "Window %d" % t[0] )
+				current_rankings.append( t[1] )
+			log.info( unsupervised.rankings.format_term_rankings_long( current_rankings, current_labels, options.top ).strip() )
+		else:
+			header = ["Rank", "Overall"]
+			for t in all_tracked_topics[i]:
+				field = "Window %d" % t[0]
+				# deal with multiple window topics from same window
+				suffix = 1
+				while field in header:
+					suffix += 1
+					field = "Window %d(%d)" % (t[0],suffix)
+				header.append( field )
+			tab = PrettyTable(header)
+			tab.align["Rank"] = "r"
+			for label in header[1:]:
+				tab.align[label] = "l"
+			# add the term rows
+			for pos in range(options.top): 
+				row = [ str(pos+1) ]
+				# the term from the overall (dynamic) topic
+				row.append( dynamic_term_rankings[i][pos] )
+				# the term for each time window topic 
+				for t in all_tracked_topics[i]:
+					# have we run out of terms?
+					if len(t[1]) <= pos:
+						row.append( "" ) 
+					else:
+						row.append( t[1][pos] ) 
+				tab.add_row( row )
+			log.info( tab )
 
 # --------------------------------------------------------------
 
