@@ -1,4 +1,4 @@
-import codecs, os, os.path, re
+import os, os.path, re
 import logging as log
 from sklearn.externals import joblib
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -133,7 +133,7 @@ class DocumentBodyGenerator:
 			log.info( "- Processing '%s' from %s ..." % (dir_name,in_path) )
 			for filepath in find_documents( in_path ):
 				doc_id = os.path.splitext( os.path.basename( filepath ) )[0]
-				fin = codecs.open(filepath, 'r', encoding="utf8", errors='ignore')
+				fin = open(filepath, 'r', encoding="utf8", errors='ignore')
 				body = fin.read()
 				fin.close()
 				if len(body) < self.min_doc_length:
