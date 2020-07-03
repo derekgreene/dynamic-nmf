@@ -33,8 +33,16 @@ def main():
 	# Parse user-specified range for number of topics K
 	if options.krange is None:
 		parser.error("Must specific number of topics, or a range for the number of topics")
-	kparts = options.krange.split(",")
-	kmin = int(kparts[0])
+	# only a single value of K specified?
+	if not "," in options.krange:
+		kmin = int(options.krange)
+		kmax = min
+	else:
+		kparts = options.krange.split(",")
+		kmin = int(kparts[0])
+		kmax = int(kparts[1])
+	if kmax < kmin:
+		kmax = kmin
 
 	# Output directory for results
 	if options.dir_out is None:
@@ -118,6 +126,7 @@ def main():
 				log.info("Model coherence (k=%d) = %.4f" % (k,coherence_scores[k]) )
 			# Write results
 			results_out_path = os.path.join( dir_out, "%s_windowtopics_k%02d.pkl"  % (window_name, k) )
+			log.info("Writing results to %s" % results_out_path)
 			unsupervised.nmf.save_nmf_results( results_out_path, doc_ids, terms, term_rankings, partition, impl.W, impl.H, topic_labels )
 
 		# Need to select best value of k?
