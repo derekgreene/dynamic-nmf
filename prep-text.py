@@ -51,7 +51,7 @@ def main():
 	else:
 		log.info("Loaded %d stopwords" % len(stopwords))
 
-	# :oad lemmatization dictionary, if specified
+	# Load lemmatization dictionary, if specified
 	lemmatizer = None
 	if not options.lem_file is None:
 		log.info("Loading lemmatization dictionary from %s ..." % options.lem_file)

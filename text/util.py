@@ -143,22 +143,25 @@ class DocumentBodyGenerator:
 
 class DocumentTokenGenerator:
 
-	def __init__( self, dir_paths, min_doc_length, stopwords ):
+	def __init__(self, dir_paths, min_doc_length, stopwords, lemmatizer=None):
 		self.dir_paths = dir_paths
 		self.min_doc_length = min_doc_length
 		self.stopwords = stopwords
 		self.min_term_length = 2
 		self.placeholder = "<stopword>"
+		self.lemmatizer = lemmatizer
 
 	def __iter__( self ):
 		bodygen = DocumentBodyGenerator( self.dir_paths, self.min_doc_length )
 		for doc_id, body in bodygen:
 			body = body.lower().strip()
 			tokens = []
-			for tok in custom_tokenizer( body, self.min_term_length ):
+			for tok in custom_tokenizer(body, self.min_term_length):
+				if not self.lemmatizer is None:
+					tok = self.lemmatizer.apply(tok)
 				if tok in self.stopwords:
-					tokens.append( self.placeholder )
+					tokens.append(self.placeholder)
 				else:
-					tokens.append( tok )
+					tokens.append(tok)
 			yield tokens
 			
