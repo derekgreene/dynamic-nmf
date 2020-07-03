@@ -2,7 +2,8 @@
 """
 Tool to pre-process documents contained one or more directories, and export a document-term matrix for each directory.
 """
-import os, os.path, sys, codecs
+import os, sys
+from pathlib import Path
 import logging as log
 from optparse import OptionParser
 import text.util
@@ -17,6 +18,7 @@ def main():
 	parser.add_option("--minlen", action="store", type="int", dest="min_doc_length", help="minimum document length (in characters)", default=10)
 	parser.add_option("-s", action="store", type="string", dest="stoplist_file", help="custom stopword file path", default=None)
 	parser.add_option("-o","--outdir", action="store", type="string", dest="dir_out", help="output directory (default is current directory)", default=None)
+	parser.add_option("--lem", action="store", type="string", dest="lem_file", help="lemmatizer dictionary file path", default=None)
 	parser.add_option("--ngram", action="store", type="int", dest="max_ngram", help="maximum ngram range (default is 1, i.e. unigrams only)", default=1)
 	# Parse command line arguments
 	(options, args) = parser.parse_args()
@@ -25,16 +27,41 @@ def main():
 	log.basicConfig(level=20, format='%(message)s')
 
 	if options.dir_out is None:
-		dir_out = os.getcwd()
+		dir_out = Path.cwd()
 	else:
-		dir_out = options.dir_out	
+		dir_out = Path(options.dir_out)
+		# need to create the output directory?
+		if not dir_out.exists():
+			try:
+				log.info("Creating directory %s" % dir_out)
+				dir_out.mkdir(parents=True, exist_ok=True)
+			except:
+				log.error("Error: Invalid output directory %s" % dir_out)
+				sys.exit(1)
 
-	# Load required stopwords
+	# Load stopwords
 	if options.stoplist_file is None:
 		stopwords = text.util.load_stopwords()
 	else:
 		log.info( "Using custom stopwords from %s" % options.stoplist_file )
 		stopwords = text.util.load_stopwords( options.stoplist_file )
+	if stopwords is None:
+		stopwords = set()
+		log.info("No stopword list available")
+	else:
+		log.info("Loaded %d stopwords" % len(stopwords))
+
+	# :oad lemmatization dictionary, if specified
+	lemmatizer = None
+	if not options.lem_file is None:
+		log.info("Loading lemmatization dictionary from %s ..." % options.lem_file)
+		lemmatizer = text.util.DictLemmatizer(options.lem_file)
+		# add any missing lemmatized stopwords
+		extra_stopwords = set()
+		for stopword in stopwords:
+			extra_stopwords.add(lemmatizer.apply(stopword))
+		stopwords = extra_stopwords
+		log.info("Using %d stopwords after lemmatization" % len(stopwords))
 
 	# Process each directory
 	for in_path in args:
@@ -50,7 +77,8 @@ def main():
 
 		# Pre-process the documents
 		log.info( "Pre-processing documents (%d stopwords, tfidf=%s, normalize=%s, min_df=%d, max_ngram=%d) ..." % (len(stopwords), options.apply_tfidf, options.apply_norm, options.min_df, options.max_ngram ) )
-		(X,terms) = text.util.preprocess( docs, stopwords, min_df = options.min_df, apply_tfidf = options.apply_tfidf, apply_norm = options.apply_norm, ngram_range = (1,options.max_ngram) )
+		(X,terms) = text.util.preprocess( docs, stopwords=stopwords, min_df = options.min_df, apply_tfidf = options.apply_tfidf, 
+			apply_norm = options.apply_norm, ngram_range = (1,options.max_ngram), lemmatizer=lemmatizer )
 		log.info( "Created %dx%d document-term matrix" % X.shape )
 
 		# Save the pre-processed documents

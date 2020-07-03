@@ -13,7 +13,8 @@ def custom_tokenizer( s, min_term_length = 2 ):
 	"""
 	return [x.lower() for x in token_pattern.findall(s) if (len(x) >= min_term_length and x[0].isalpha() ) ]
 
-def preprocess( docs, stopwords, min_df = 3, min_term_length = 2, ngram_range = (1,1), apply_tfidf = True, apply_norm = True, tokenizer=custom_tokenizer ):
+def preprocess( docs, stopwords, min_df = 3, min_term_length = 2, ngram_range = (1,1), apply_tfidf = True, apply_norm = True, 
+	tokenizer=custom_tokenizer, lemmatizer=None ):
 	"""
 	Preprocess a list containing text documents stored as strings.
 	"""
@@ -22,7 +23,20 @@ def preprocess( docs, stopwords, min_df = 3, min_term_length = 2, ngram_range = 
 		norm_function = "l2"
 	else:
 		norm_function = None
-	tfidf = TfidfVectorizer(stop_words=stopwords, lowercase=True, strip_accents="unicode", tokenizer=tokenizer, use_idf=apply_tfidf, norm=norm_function, min_df = min_df, ngram_range = ngram_range) 
+	# tokenizer to support lemmatization
+	def unigram_tokenizer(s):
+		tokens = custom_tokenizer(s.lower())
+		if lemmatizer is None:
+			return 
+		lem_tokens = []
+		for token in tokens:
+			ltoken = lemmatizer.apply(token)
+			if len(ltoken) >= min_term_length:
+				lem_tokens.append(ltoken)
+		return lem_tokens		
+	# apply the preprocessing
+	tfidf = TfidfVectorizer(stop_words=stopwords, lowercase=True, strip_accents="unicode", 
+		tokenizer=unigram_tokenizer, use_idf=apply_tfidf, norm=norm_function, min_df = min_df, ngram_range = ngram_range) 
 	X = tfidf.fit_transform(docs)
 	terms = []
 	# store the vocabulary map
@@ -45,6 +59,31 @@ def load_stopwords( inpath = "text/stopwords.txt" ):
 			if len(l) > 0:
 				stopwords.add(l)
 	return stopwords
+
+# --------------------------------------------------------------
+
+class DictLemmatizer:
+	"""
+	Simple dictionary-based lemmatizer, based on a mapping stored in a tab-separated
+	input file.
+	"""
+	def __init__(self, in_path, min_term_length = 2):
+		self.term_map = {}
+		with open(in_path, 'r', encoding="utf8", errors='ignore') as fin:
+			while True:
+				line = fin.readline()
+				if not line:
+					break
+				parts = line.strip().lower().split("\t")
+				term = parts[1].strip()
+				stem = parts[0].strip()
+				if len(term) >= min_term_length and len(stem) >= min_term_length:
+					self.term_map[term] = stem
+
+	def apply(self, s):
+		if not s in self.term_map:
+			return s
+		return self.term_map[s]
 
 # --------------------------------------------------------------
 
