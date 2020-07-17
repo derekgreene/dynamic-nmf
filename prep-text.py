@@ -65,6 +65,9 @@ def main():
 
 	# Process each directory
 	for in_path in args:
+		if not os.path.exists(in_path):
+			log.warning("Warning: Skipping %s - path does not exist" % in_path)
+			continue
 		dir_name = os.path.basename( in_path )
 		# Read content of all documents in the directory
 		docgen = text.util.DocumentBodyGenerator( [in_path], options.min_doc_length )
@@ -73,6 +76,10 @@ def main():
 		for doc_id, body in docgen:
 			docs.append(body)	
 			doc_ids.append(doc_id)	
+		# check for no documents
+		if len(docs) == 0:
+			log.warning("Warning: Skipping %s - contains no documents" % in_path)
+			continue
 		log.info( "Found %d documents to parse" % len(docs) )
 
 		# Pre-process the documents
