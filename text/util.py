@@ -27,7 +27,7 @@ def preprocess( docs, stopwords, min_df = 3, min_term_length = 2, ngram_range = 
 	def unigram_tokenizer(s):
 		tokens = custom_tokenizer(s.lower())
 		if lemmatizer is None:
-			return 
+			return tokens
 		lem_tokens = []
 		for token in tokens:
 			ltoken = lemmatizer.apply(token)
