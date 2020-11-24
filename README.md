@@ -4,9 +4,9 @@
 
 Standard topic modeling approaches assume the order of documents does not matter, making them unsuitable for time-stamped corpora. In contrast, *dynamic topic modeling* approaches track how language changes and topics evolve over time. We have developed a two-level approach for dynamic topic modeling via Non-negative Matrix Factorization (NMF), which links together topics identified in snapshots of text sources appearing over time.
 
-If you make use of this implementation, please consider citing the associated paper [Link](https://doi.org/10.1017/pan.2016.7) [Preprint](http://arxiv.org/abs/1607.03055) [PDF](http://derekgreene.com/papers/greene17europarl.pdf) [BibTeX](http://derekgreene.com/bib/greene17europarl.bib):
+If you make use of this implementation, please consider citing [the associated paper](https://doi.org/10.1017/pan.2016.7):
 
-* Greene, Derek, and James P. Cross. "Exploring the Political Agenda of the European Parliament Using a Dynamic Topic Modeling Approach." Political Analysis 25.1 (2017): 77-94.
+* Greene, Derek, and James P. Cross. "Exploring the Political Agenda of the European Parliament Using a Dynamic Topic Modeling Approach." Political Analysis 25.1 (2017): 77-94. [[PDF]](http://derekgreene.com/papers/greene17europarl.pdf) [[BibTeX]](http://derekgreene.com/bib/greene17europarl.bib) [[Preprint]](http://arxiv.org/abs/1607.03055)
 	
 This repository contains a Python reference implementation for the approach described in the paper.
 
