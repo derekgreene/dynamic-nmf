@@ -1,6 +1,10 @@
-# dynamic-nmf: Dynamic Topic Modeling
+# dynamic-nmf: Dynamic Topic Modeling - for congress 1982-2020
 
-### Summary
+### JMP Summary
+The code in this forked repository is generally the same as the original repository. The code is slightly modified to work with the processed Hein-Daily collection of the Congressional record, which is not in single text file form. This repository also includes the custom code for pre-processing the speeches in the congressional record.
+
+
+### Original DG Summary
 
 Standard topic modeling approaches assume the order of documents does not matter, making them unsuitable for time-stamped corpora. In contrast, *dynamic topic modeling* approaches track how language changes and topics evolve over time. We have developed a two-level approach for dynamic topic modeling via Non-negative Matrix Factorization (NMF), which links together topics identified in snapshots of text sources appearing over time.
 
