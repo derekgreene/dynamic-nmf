@@ -4,7 +4,7 @@ Tool to generate a dynamic topic model, by combining a set of time window topic 
 
 Sample usage:
 
-python find-dynamic-topics.py out/month1_windowtopics_k05.pkl out/month2_windowtopics_k08.pkl out/month3_windowtopics_k08.pkl -k 4,10 -o out -m out/w2v-model.bin 
+python find-dynamic-topics.py out/month1_windowtopics_k05.pkl out/month2_windowtopics_k08.pkl out/month3_windowtopics_k08.pkl -k 4,10 -o out -m out/w2v-model.bin
 """
 import os, sys, random, operator
 import logging as log
@@ -23,9 +23,9 @@ class TopicCollection:
 		self.top_terms = top_terms
 		self.threshold = threshold
 		# state
-		self.topic_ids = []		
+		self.topic_ids = []
 		self.all_weights = []
-		self.all_terms = set()		
+		self.all_terms = set()
 
 	def add_topic_model( self, H, terms, window_topic_labels ):
 		'''
@@ -102,14 +102,14 @@ def main():
 	if random_seed < 0:
 		random_seed = random.randint(1,100000)
 	np.random.seed( random_seed )
-	random.seed( random_seed )			
+	random.seed( random_seed )
 	log.info("Using random seed %s" % random_seed )
 
 	# Output directory for results
 	if options.dir_out is None:
 		dir_out = os.getcwd()
 	else:
-		dir_out = options.dir_out	
+		dir_out = options.dir_out
 
 	# Will we use automatic model selection?
 	validation_measure = None
@@ -121,7 +121,7 @@ def main():
 		if not options.model_path is None:
 			log.info( "Loading Word2Vec model from %s ..." % options.model_path )
 			import gensim
-			model = gensim.models.Word2Vec.load(options.model_path) 
+			model = gensim.models.Word2Vec.load(options.model_path)
 			validation_measure = unsupervised.coherence.WithinTopicMeasure( unsupervised.coherence.ModelSimilarity(model) )
 
 	# Process each specified window topic model
@@ -156,7 +156,7 @@ def main():
 			topic_labels.append( "D%02d" % (i+1) )
 		# Create term rankings for each topic
 		term_rankings = []
-		for topic_index in range(k):		
+		for topic_index in range(k):
 			ranked_term_indices = impl.rank_terms( topic_index )
 			term_ranking = [all_terms[i] for i in ranked_term_indices]
 			term_rankings.append(term_ranking)
@@ -183,4 +183,3 @@ def main():
 
 if __name__ == "__main__":
 	main()
- 

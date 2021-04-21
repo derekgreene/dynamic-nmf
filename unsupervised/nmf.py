@@ -25,6 +25,7 @@ class SklNMF:
 		model = decomposition.NMF(init=self.init_strategy, n_components=k, max_iter=self.max_iters, random_state = self.random_seed)
 		self.W = model.fit_transform(X)
 		self.H = model.components_
+		return model
 
 	def rank_terms( self, topic_index, top = -1 ):
 		"""
@@ -58,7 +59,7 @@ def generate_doc_rankings( W ):
 		doc_rankings.append(top_indices)
 	return doc_rankings
 
-def save_nmf_results( out_path, doc_ids, terms, term_rankings, partition, W, H, topic_labels=None ):
+def save_nmf_results( out_path, doc_ids, terms, term_rankings, partition, W, H, model, topic_labels=None):
 	"""
 	Save output of NMF using Joblib. Note that we use the scikit-learn bundled version of joblib.
 	"""
@@ -68,11 +69,14 @@ def save_nmf_results( out_path, doc_ids, terms, term_rankings, partition, W, H, 
 		for i in range( len(term_rankings) ):
 			topic_labels.append( "C%02d" % (i+1) )
 	log.info( "Saving NMF results to %s" % out_path )
-	joblib.dump((doc_ids, terms, term_rankings, partition, W, H, topic_labels), out_path )
+	_dict = {"model":model,"doc_ids":doc_ids,"terms":terms,"term_ranking":term_rankings,
+			 "partition":partition,"W":W,"H":H,"topic_labels":topic_labels}
+	joblib.dump(_dict, out_path )
 
 def load_nmf_results( in_path ):
 	"""
 	Load NMF results using Joblib. Note that we use the scikit-learn bundled version of joblib.
 	"""
-	(doc_ids, terms, term_rankings, partition, W, H, labels) = joblib.load( in_path )
-	return (doc_ids, terms, term_rankings, partition, W, H, labels)
+	nmf_results = joblib.load( in_path )
+	
+	return (nmf_results['doc_ids'], nmf_results['terms'], nmf_results['term_rankings'], nmf_results['partition'], nmf_results['W'], nmf_results['H'], nmf_results['labels'])

@@ -105,7 +105,7 @@ def main():
 		for k in range(actual_kmin,actual_kmax+1):
 			log.info( "Applying window topic modeling to matrix for k=%d topics ..." % k )
 			try:
-				impl.apply( X, k )
+				model = impl.apply( X, k )
 			except IndexError as e:
 				# a sklearn error can happen when applying NMF for high values of K and very small datasets
 				log.warning( "Error applying NMF for k=%d: %s" % ( k, str(e) ) )
@@ -134,7 +134,7 @@ def main():
 			# Write results
 			results_out_path = os.path.join( dir_out, "%s_windowtopics_k%02d.pkl"  % (window_name, k) )
 			log.info("Writing results to %s" % results_out_path)
-			unsupervised.nmf.save_nmf_results( results_out_path, doc_ids, terms, term_rankings, partition, impl.W, impl.H, topic_labels )
+			unsupervised.nmf.save_nmf_results(results_out_path, doc_ids, terms, term_rankings, partition, impl.W, impl.H, model, topic_labels)
 
 		# Need to select best value of k?
 		if len(coherence_scores) > 0:
