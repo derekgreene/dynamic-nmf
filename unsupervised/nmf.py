@@ -1,7 +1,7 @@
 import logging as log
 import numpy as np
 from sklearn import decomposition
-from sklearn.externals import joblib
+import joblib
 
 # --------------------------------------------------------------
 
@@ -24,8 +24,8 @@ class SklNMF:
 		self.H = None
 		model = decomposition.NMF(init=self.init_strategy, n_components=k, max_iter=self.max_iters, random_state = self.random_seed)
 		self.W = model.fit_transform(X)
-		self.H = model.components_			
-		
+		self.H = model.components_
+
 	def rank_terms( self, topic_index, top = -1 ):
 		"""
 		Return the top ranked terms for the specified topic, generated during the last NMF run.
@@ -42,7 +42,7 @@ class SklNMF:
 	def generate_partition( self ):
 		if self.W is None:
 			raise ValueError("No results for previous run available")
-		return np.argmax( self.W, axis = 1 ).flatten().tolist()		
+		return np.argmax( self.W, axis = 1 ).flatten().tolist()
 
 # --------------------------------------------------------------
 
@@ -68,7 +68,7 @@ def save_nmf_results( out_path, doc_ids, terms, term_rankings, partition, W, H, 
 		for i in range( len(term_rankings) ):
 			topic_labels.append( "C%02d" % (i+1) )
 	log.info( "Saving NMF results to %s" % out_path )
-	joblib.dump((doc_ids, terms, term_rankings, partition, W, H, topic_labels), out_path ) 
+	joblib.dump((doc_ids, terms, term_rankings, partition, W, H, topic_labels), out_path )
 
 def load_nmf_results( in_path ):
 	"""
@@ -76,4 +76,3 @@ def load_nmf_results( in_path ):
 	"""
 	(doc_ids, terms, term_rankings, partition, W, H, labels) = joblib.load( in_path )
 	return (doc_ids, terms, term_rankings, partition, W, H, labels)
-

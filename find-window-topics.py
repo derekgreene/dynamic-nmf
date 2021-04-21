@@ -8,6 +8,7 @@ from optparse import OptionParser
 import numpy as np
 import text.util
 import unsupervised.nmf, unsupervised.rankings, unsupervised.coherence
+import joblib
 
 # --------------------------------------------------------------
 
@@ -16,14 +17,14 @@ def main():
 	parser.add_option("--seed", action="store", type="int", dest="seed", help="initial random seed", default=1000)
 	parser.add_option("-k", action="store", type="string", dest="krange", help="number of topics", default=None)
 	parser.add_option("--maxiters", action="store", type="int", dest="maxiter", help="maximum number of iterations", default=200)
-	parser.add_option("-o","--outdir", action="store", type="string", dest="dir_out", 
+	parser.add_option("-o","--outdir", action="store", type="string", dest="dir_out",
 		help="base output directory (default is current directory)", default=None)
-	parser.add_option("-m", "--model", action="store", type="string", dest="model_path", 
+	parser.add_option("-m", "--model", action="store", type="string", dest="model_path",
 		help="path to Word2Vec model, if performing automatic selection of number of topics", default=None)
-	parser.add_option("-t", "--top", action="store", type="int", dest="top", 
+	parser.add_option("-t", "--top", action="store", type="int", dest="top",
 		help="number of top terms to use, if performing automatic selection of number of topics", default=20)
 	parser.add_option("-v", "--verbose", action="store_true", dest="verbose", help="display topic descriptors")
-	parser.add_option("-w", action="store", type="string", dest="path_selected_ks", 
+	parser.add_option("-w", action="store", type="string", dest="path_selected_ks",
 		help="output path, if writing model selection values", default=None)
 	(options, args) = parser.parse_args()
 	if( len(args) < 1 ):
@@ -36,7 +37,7 @@ def main():
 	# only a single value of K specified?
 	if not "," in options.krange:
 		kmin = int(options.krange)
-		kmax = min
+		kmax = kmin
 	else:
 		kparts = options.krange.split(",")
 		kmin = int(kparts[0])
@@ -48,7 +49,7 @@ def main():
 	if options.dir_out is None:
 		dir_out = os.getcwd()
 	else:
-		dir_out = options.dir_out	
+		dir_out = options.dir_out
 		if not os.path.exists(dir_out):
 			os.makedirs(dir_out)
 
@@ -57,7 +58,7 @@ def main():
 	if random_seed < 0:
 		random_seed = random.randint(1,100000)
 	np.random.seed( random_seed )
-	random.seed( random_seed )			
+	random.seed( random_seed )
 	log.info("Using random seed %s" % random_seed )
 
 	# Will we use automatic model selection?
@@ -72,7 +73,7 @@ def main():
 		if not options.model_path is None:
 			log.info( "Loading Word2Vec model from %s ..." % options.model_path )
 			import gensim
-			model = gensim.models.Word2Vec.load(options.model_path) 
+			model = gensim.models.Word2Vec.load(options.model_path)
 			validation_measure = unsupervised.coherence.WithinTopicMeasure( unsupervised.coherence.ModelSimilarity(model) )
 
 	# NMF implementation
@@ -84,7 +85,13 @@ def main():
 		# Load the cached corpus
 		window_name = os.path.splitext( os.path.split( matrix_filepath )[-1] )[0]
 		log.info( "- Processing time window matrix for '%s' from %s ..." % (window_name,matrix_filepath) )
-		(X,terms,doc_ids) = text.util.load_corpus( matrix_filepath )
+
+		corpus_dict = joblib.load(matrix_filepath)
+		X = corpus_dict['dtm']
+		terms = corpus_dict['vocab']
+		doc_ids = corpus_dict['speech_id']
+
+		# (X,terms,doc_ids) = text.util.load_corpus( matrix_filepath )
 		log.info( "Read %dx%d document-term matrix" % ( X.shape[0], X.shape[1] ) )
 
 		# Ensure that value of kmin and kmax are not greater than the number of documents
@@ -112,7 +119,7 @@ def main():
 				topic_labels.append( "%s_%02d" % ( window_name, (i+1) ) )
 			# Create term rankings for each topic
 			term_rankings = []
-			for topic_index in range(k):		
+			for topic_index in range(k):
 				ranked_term_indices = impl.rank_terms( topic_index )
 				term_ranking = [terms[i] for i in ranked_term_indices]
 				term_rankings.append(term_ranking)
@@ -149,4 +156,3 @@ def main():
 
 if __name__ == "__main__":
 	main()
- 

@@ -1,6 +1,6 @@
 import os, os.path, re
 import logging as log
-from sklearn.externals import joblib
+import joblib
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 # --------------------------------------------------------------
@@ -13,7 +13,7 @@ def custom_tokenizer( s, min_term_length = 2 ):
 	"""
 	return [x.lower() for x in token_pattern.findall(s) if (len(x) >= min_term_length and x[0].isalpha() ) ]
 
-def preprocess( docs, stopwords, min_df = 3, min_term_length = 2, ngram_range = (1,1), apply_tfidf = True, apply_norm = True, 
+def preprocess( docs, stopwords, min_df = 3, min_term_length = 2, ngram_range = (1,1), apply_tfidf = True, apply_norm = True,
 	tokenizer=custom_tokenizer, lemmatizer=None ):
 	"""
 	Preprocess a list containing text documents stored as strings.
@@ -33,10 +33,10 @@ def preprocess( docs, stopwords, min_df = 3, min_term_length = 2, ngram_range = 
 			ltoken = lemmatizer.apply(token)
 			if len(ltoken) >= min_term_length:
 				lem_tokens.append(ltoken)
-		return lem_tokens		
+		return lem_tokens
 	# apply the preprocessing
-	tfidf = TfidfVectorizer(stop_words=stopwords, lowercase=True, strip_accents="unicode", 
-		tokenizer=unigram_tokenizer, use_idf=apply_tfidf, norm=norm_function, min_df = min_df, ngram_range = ngram_range) 
+	tfidf = TfidfVectorizer(stop_words=stopwords, lowercase=True, strip_accents="unicode",
+		tokenizer=unigram_tokenizer, use_idf=apply_tfidf, norm=norm_function, min_df = min_df, ngram_range = ngram_range)
 	X = tfidf.fit_transform(docs)
 	terms = []
 	# store the vocabulary map
@@ -91,9 +91,9 @@ def save_corpus( out_prefix, X, terms, doc_ids ):
 	"""
 	Save a pre-processed scikit-learn corpus and associated metadata using Joblib.
 	"""
-	matrix_outpath = "%s.pkl" % out_prefix 
+	matrix_outpath = "%s.pkl" % out_prefix
 	log.info( "Saving document-term matrix to %s" % matrix_outpath )
-	joblib.dump((X,terms,doc_ids), matrix_outpath ) 
+	joblib.dump((X,terms,doc_ids), matrix_outpath )
 
 def load_corpus( in_path ):
 	"""
@@ -116,7 +116,7 @@ def find_documents( root_path ):
 			filepath = os.path.join(dir_path,filename)
 			filepaths.append( filepath )
 	filepaths.sort()
-	return filepaths	
+	return filepaths
 
 # --------------------------------------------------------------
 
@@ -164,4 +164,3 @@ class DocumentTokenGenerator:
 				else:
 					tokens.append(tok)
 			yield tokens
-			

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Tool to pre-process documents contained one or more directories, and build a Word2Vec model. 
+Tool to pre-process documents contained one or more directories, and build a Word2Vec model.
 
 This implementation requires Gensim. For documentation regarding the various parameters, see:
 https://radimrehurek.com/gensim/models/word2vec.html
@@ -10,6 +10,7 @@ import logging as log
 from optparse import OptionParser
 import gensim
 import text.util
+from text.congressional_utils.utils import merge_texts
 
 # --------------------------------------------------------------
 
@@ -19,7 +20,7 @@ def main():
 	parser.add_option("--df", action="store", type="int", dest="min_df", help="minimum number of documents for a term to appear", default=10)
 	parser.add_option("--minlen", action="store", type="int", dest="min_doc_length", help="minimum document length (in characters)", default=50)
 	parser.add_option("-d","--dimensions", action="store", type="int", dest="dimensions", help="the dimensionality of the word vectors", default=500)
-	parser.add_option("--window", action="store", type="int", dest="w2v_window", 
+	parser.add_option("--window", action="store", type="int", dest="w2v_window",
 		help="the maximum distance for Word2Vec to use between the current and predicted word within a sentence", default=5)
 	parser.add_option("--lem", action="store", type="string", dest="lem_file", help="lemmatizer dictionary file path", default=None)
 	parser.add_option("-o","--outdir", action="store", type="string", dest="dir_out", help="output directory (default is current directory)", default=None)
@@ -28,7 +29,7 @@ def main():
 	# Parse command line arguments
 	(options, args) = parser.parse_args()
 	if len(args) < 1:
-		parser.error("Must specify at least one directory of file path")	
+		parser.error("Must specify at least one directory of file path")
 	# control level of log output
 	log_level = log.DEBUG if options.debug else log.INFO
 	log.basicConfig(level=log_level, format='%(message)s')
@@ -36,41 +37,17 @@ def main():
 	if options.dir_out is None:
 		dir_out = os.getcwd()
 	else:
-		dir_out = options.dir_out	
+		dir_out = options.dir_out
 
-	# Load required stopwords
-	if options.stoplist_file is None:
-		stopwords = text.util.load_stopwords()
-	else:
-		log.info("Using custom stopwords from %s" % options.stoplist_file)
-		stopwords = text.util.load_stopwords( options.stoplist_file )
-	if stopwords is None:
-		stopwords = set()
-		log.info("No stopword list available")
-	else:
-		log.info("Loaded %d stopwords" % len(stopwords))
-
-	# Load lemmatization dictionary, if specified
-	lemmatizer = None
-	if not options.lem_file is None:
-		log.info("Loading lemmatization dictionary from %s ..." % options.lem_file)
-		lemmatizer = text.util.DictLemmatizer(options.lem_file)
-		# add any missing lemmatized stopwords
-		extra_stopwords = set()
-		for stopword in stopwords:
-			extra_stopwords.add(lemmatizer.apply(stopword))
-		stopwords = extra_stopwords
-		log.info("Using %d stopwords after lemmatization" % len(stopwords))
-
-	# Process all specified directories
-	docgen = text.util.DocumentTokenGenerator(args, options.min_doc_length, stopwords, lemmatizer)
+	# custom JMP code here
+	texts = merge_texts(args)
 
 	# Build the Word2Vec model from the documents that we have found
 	log.info( "Building Word2vec %s model..." % options.model_type )
 	if options.model_type == "cbow":
-		model = gensim.models.Word2Vec(docgen, size=options.dimensions, min_count=options.min_df, window=options.w2v_window, workers=4, sg = 0)
+		model = gensim.models.Word2Vec(texts, vector_size=options.dimensions, min_count=options.min_df, window=options.w2v_window, workers=4, sg = 0)
 	elif options.model_type == "sg":
-		model = gensim.models.Word2Vec(docgen, size=options.dimensions, min_count=options.min_df, window=options.w2v_window, workers=4, sg = 1)
+		model = gensim.models.Word2Vec(texts, vector_size=options.dimensions, min_count=options.min_df, window=options.w2v_window, workers=4, sg = 1)
 	else:
 		log.error("Unknown model type '%s'" % options.model_type )
 		sys.exit(1)
@@ -80,7 +57,7 @@ def main():
 	model_out_path = os.path.join( dir_out, "w2v-model.bin" )
 	log.info( "Writing model to %s ..." % model_out_path )
 	model.save(model_out_path)
-			
+
 # --------------------------------------------------------------
 
 if __name__ == "__main__":
