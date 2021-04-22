@@ -140,17 +140,19 @@ def main():
 		if len(coherence_scores) > 0:
 			sx = sorted(coherence_scores.items(), key=operator.itemgetter(1))
 			sx.reverse()
+			print(sx)
 			top_k = [ p[0] for p in sx ][0:min(3,len(sx))]
+			top_v = [ p[1] for p in sx]
 			log.info("- Top recommendations for number of topics for '%s': %s" % (window_name,",".join(map(str, top_k))) )
-			selected_ks.append( [matrix_filepath, top_k[0]] )
+			selected_ks.append( [matrix_filepath, top_v[0], top_k[0]] )
 
 	if not options.path_selected_ks is None:
 		log.info("Writing selected numbers of topics for %d window datasets to %s" % ( len(selected_ks), options.path_selected_ks ) )
 		with open(options.path_selected_ks, "w") as fout:
-			fout.write("window,k\n")
+			fout.write("window,TC_W2V,k\n")
 			for pair in selected_ks:
 				window_id = os.path.splitext( os.path.split(pair[0])[-1] )[0]
-				fout.write("%s,%d\n" % ( window_id, pair[1] ) )
+				fout.write("%s,%d,%d\n" % ( window_id, pair[1],pair[2] ) )
 
 # --------------------------------------------------------------
 
