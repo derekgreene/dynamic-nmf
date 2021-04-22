@@ -146,7 +146,7 @@ def main():
 	coherence_scores = {}
 	for k in range(kmin,kmax+1):
 		log.info( "Applying dynamic topic modeling to matrix for k=%d topics ..." % k )
-		impl.apply( M, k )
+		model = impl.apply( M, k )
 		log.info( "Generated %dx%d factor W and %dx%d factor H" % ( impl.W.shape[0], impl.W.shape[1], impl.H.shape[0], impl.H.shape[1] ) )
 		# Create a disjoint partition of documents
 		partition = impl.generate_partition()
@@ -170,7 +170,7 @@ def main():
 			log.info("Model coherence (k=%d) = %.4f" % (k,coherence_scores[k]) )
 		# Write results
 		results_out_path = os.path.join( dir_out, "dynamictopics_k%02d.pkl"  % (k) )
-		unsupervised.nmf.save_nmf_results( results_out_path, collection.topic_ids, all_terms, term_rankings, partition, impl.W, impl.H, topic_labels )
+		unsupervised.nmf.save_nmf_results( results_out_path, collection.topic_ids, all_terms, term_rankings, partition, impl.W, impl.H, model, topic_labels )
 
 	# Need to select value of k?
 	if len(coherence_scores) > 0:

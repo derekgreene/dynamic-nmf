@@ -78,5 +78,5 @@ def load_nmf_results( in_path ):
 	Load NMF results using Joblib. Note that we use the scikit-learn bundled version of joblib.
 	"""
 	nmf_results = joblib.load( in_path )
-	
-	return (nmf_results['doc_ids'], nmf_results['terms'], nmf_results['term_rankings'], nmf_results['partition'], nmf_results['W'], nmf_results['H'], nmf_results['labels'])
+
+	return (nmf_results['doc_ids'], nmf_results['terms'], nmf_results['term_ranking'], nmf_results['partition'], nmf_results['W'], nmf_results['H'], nmf_results['topic_labels'])
