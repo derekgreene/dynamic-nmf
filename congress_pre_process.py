@@ -3,7 +3,10 @@ import pandas as pd
 from spacy.tokenizer import Tokenizer
 from spacy.util import compile_prefix_regex, compile_infix_regex, compile_suffix_regex
 import spacy
-nlp = spacy.load("en_core_web_sm")
+nlp = spacy.load("en_core_web_sm",exclude=['parser','ner','entity_linker',
+                                            'entity_ruler','textcat',
+                                            'textcat_multilabel','senter','sentencizer',
+                                            'morphologozier','transformer'])
 
 from string import punctuation
 from tqdm import tqdm
@@ -12,7 +15,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from text.congressional_utils.utils import *
 from optparse import OptionParser
 from gensim.models.phrases import Phrases
-
+import time
 
 def custom_tokenizer(nlp):
     """
@@ -30,13 +33,13 @@ def custom_tokenizer(nlp):
 nlp.tokenizer = custom_tokenizer(nlp)
 
 
-def tokenize(speech):
+def POS_select(speech):
     """
     speech tokenizer, lemmatizes only NOUN, PROPN, VERB, ADJ
     """
     # Tokenize and lemmatize
     text = []
-    for token in nlp(speech):
+    for token in speech:
         if token.pos_ in ['NOUN','PROPN','VERB','ADJ']:
             text.append(token.lemma_.lower().replace('.',''))
     return text
@@ -99,10 +102,11 @@ class speech_processor():
                                               language = self.omit_tokens['phrases']))]
 
         if testing:
-            print('testing: only using 200 speeches')
-            self.df = self.df.sample(200)
+            print('testing: only using 500 speeches')
+            self.df = self.df.sample(500)
 
-    def process_speeches(self, omit_keys = None, min_df = 50, threshold = 10):
+    def process_speeches(self, omit_keys = None, min_df = 50, threshold = 10,
+                        batch_size=20):
         """
         pre-process speeches. Performs normalization, phrase removal, tokenization,
         and bigram collocation.
@@ -122,8 +126,9 @@ class speech_processor():
         # remove phrases
         text_phrased = [remove_phrases(speech,omit) for speech in tqdm(text_normalized,desc="omitting phrases")]
         # tokenize
-        text_tokens = [tokenize(speech) for speech in tqdm(text_phrased,desc='tokenizing')]
-        # collocation
+        text_tokenized = list(nlp.pipe(text_phrased,batch_size=batch_size))
+        text_tokens = [POS_select(speech) for speech in tqdm(text_tokenized)]
+
         bigrams = Phrases(text_tokens, min_count=min_df, threshold=threshold)
         speech_ngrams = [bigrams[sent] for sent in text_tokens]
         # rejoin
@@ -192,13 +197,13 @@ class speech_processor():
 
 
 def main(path, chamber, omit_tokens, out_path, wc=50, start_date=None, end_date = None,
-         ngram_min_df = 50, ngram_thresh=10, dtm_min_df = 30,
+         ngram_min_df = 50, ngram_thresh=10, batch_size=20, dtm_min_df = 30,
          dtm_max_df = 0.3, filename=None,testing=False):
 
     processor = speech_processor(path,chamber,omit_tokens)
     processor.generate_speeches_df(wc,start_date,end_date,testing)
     print('parsed speeches')
-    processor.process_speeches(ngram_min_df,ngram_thresh)
+    processor.process_speeches(ngram_min_df,ngram_thresh,batch_size)
     print('pre-processed speeches')
     processor.make_dtm(dtm_min_df,dtm_max_df)
     processor.save_speeches_df(out_path,filename)
@@ -211,6 +216,7 @@ if __name__ == '__main__':
     parser.add_option('--ed',action='store',type='string',dest='end_date',default=None)
     parser.add_option('--nmin',action='store',type='int',dest='ngram_min_df',default=50)
     parser.add_option('--nt',action='store',type='int',dest='ngram_thresh',default=10)
+    parser.add_option('--b',action='store',type='int',dest='batch_size',default=20)
     parser.add_option('--mindf',action='store',type='int',dest='dtm_min_df',default=30)
     parser.add_option('--maxdf',action='store',type='float',dest='dtm_max_df',default=.3)
     parser.add_option('--f',action='store',type='string',dest='filename',default=None)
@@ -219,5 +225,5 @@ if __name__ == '__main__':
     path, chamber, omit_tokens, out_path = args
 
     main(path,chamber,omit_tokens,out_path,options.wc, options.start_date,
-        options.end_date,options.ngram_min_df,options.ngram_thresh,options.dtm_min_df,
-        options.dtm_max_df,options.filename,options.testing)
+        options.end_date,options.ngram_min_df,options.ngram_thresh,options.batch_size,
+        options.dtm_min_df,options.dtm_max_df,options.filename,options.testing)
