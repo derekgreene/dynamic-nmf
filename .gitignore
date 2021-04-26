@@ -1,4 +1,7 @@
 # data
+
+.DS_Store
+notebooks/
 data/
 # Byte-compiled / optimized / DLL files
 __pycache__/
